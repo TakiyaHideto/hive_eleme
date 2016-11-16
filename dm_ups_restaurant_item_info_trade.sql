@@ -27,7 +27,7 @@ create table temp.temp_mdl_restaurant_recent_7_returning_customer as
         where 
             dt='${day}' and 
             datediff('${day}',order_date)<8 and 
-            status_code=2 and
+            order_status=1 and
             user_id<>886
         group by 
             restaurant_id, 
@@ -56,7 +56,7 @@ create table temp.temp_mdl_restaurant_recent_30_returning_customer as
         where 
             dt='${day}' and 
             datediff('${day}',order_date)<31 and 
-            status_code=2 and
+            order_status=1 and
             user_id<>886
         group by 
             restaurant_id, 
@@ -86,7 +86,7 @@ create table temp.temp_mdl_restaurant_recent_7_trade as
         where  
             dt='${day}' and 
             datediff('${day}',order_date)<8 and 
-            status_code=2 and 
+            order_status=1 and 
             user_id<>886
     ) t1
     left outer join 
@@ -132,7 +132,7 @@ create table temp.temp_mdl_restaurant_recent_30_trade as
         where 
             dt='${day}' and 
             datediff('${day}',order_date)<31 and 
-            status_code=2 and
+            order_status=1 and
             user_id<>886
         ) t1
     left outer join temp.temp_mdl_restaurant_recent_30_returning_customer t2
@@ -256,7 +256,7 @@ create table temp.temp_mdl_restaurant_long_term_trade as
     where 
         dt='${day}' and 
         order_date>='2016-01-01' and 
-        status_code=2 and
+        order_status=1 and
         user_id<>886
     group by 
         restaurant_id
@@ -284,7 +284,7 @@ from (
             where 
                 dt='${day}' and 
                 datediff('${day}',order_date)<31 and
-                status_code=2
+                order_status=1
         ) t1
         join (
             select order_id, entity_id

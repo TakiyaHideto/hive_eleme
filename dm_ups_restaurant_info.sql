@@ -6,22 +6,46 @@
 #***************************************************************************************************
 
 
--- sub task 1: import data
-insert overwrite table dm.dm_ups_restaurant_info partition(dt='${day}')
-select t.restaurant_id, concat('{', concat_ws(',', collect_set(t.category_value)),'}') profile_json 
-from 
+INSERT OVERWRITE TABLE dm.dm_ups_restaurant_info PARTITION(dt = '${day}')
+SELECT
+    b.restaurant_id,
+    CONCAT('{', CONCAT_WS(',', COLLECT_LIST(b.category_value)), '}') AS profile_json
+FROM
 (
-	select restaurant_id, top_category,
-	    concat('\"', top_category, '\":{', 
-	        concat_ws(',', collect_set(concat('\"', attr_key, '\":', case when is_json=1 then attr_value else concat('\"', attr_value, '\"') end))
-	        	),'}'
-	        ) category_value 
-	from dm.dm_ups_restaurant_item_info 
-	where dt='3000-12-31'
-	group by restaurant_id, top_category
-) t 
-group by t.restaurant_id;
+    SELECT
+        a.restaurant_id,
+        a.top_category,
+        CONCAT('\"', a.top_category, '\":{', 
+          CONCAT_WS(',', 
+             COLLECT_LIST(
+                CONCAT('\"', a.attr_key, '\":',
+                  CASE
+                    WHEN a.is_json = 1 THEN attr_value
+                    ELSE CONCAT('\"', a.attr_value, '\"')
+                  END)
+             )
+          ), '}'
+        ) AS category_value
+    FROM
+    (
+        SELECT
+            restaurant_id, top_category, attr_key, attr_value, is_json
+        FROM
+            dm.dm_ups_restaurant_item_info
+        WHERE
+            dt = '3000-12-31' AND attr_value NOT IN ('-', '0')
+        DISTRIBUTE BY
+            restaurant_id
+        SORT BY
+            restaurant_id, top_category, attr_key
+    ) a
+    GROUP BY
+        a.restaurant_id, a.top_category
+) b
+GROUP BY
+    b.restaurant_id;
 
-insert overwrite table dm.dm_ups_restaurant_info partition(dt='3000-12-31') 
-select restaurant_id, profile_json from dm.dm_ups_restaurant_info where dt='${day}';
+
+INSERT OVERWRITE TABLE dm.dm_ups_restaurant_info PARTITION(dt = '3000-12-31') 
+SELECT restaurant_id, profile_json FROM dm.dm_ups_restaurant_info WHERE dt = '${day}';
 

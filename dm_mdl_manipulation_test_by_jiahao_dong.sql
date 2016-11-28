@@ -20,18 +20,26 @@
 -- stored as textfile;
 
 
+
 drop table dm.dm_mdl_restaurant_eleme_subsidy_strategy;
-create table dm.dm_mdl_restaurant_eleme_subsidy_strategy(
-	restaurant_id string,
-	strategy string,
-	strategy_code string,
-	is_multi_strategy string
-) partitioned by (dt string)
-row format delimited
-fields terminated by '\t' 
-stored as textfile;
-
-
+CREATE EXTERNAL TABLE `dm.dm_mdl_restaurant_eleme_subsidy_strategy`(
+  	restaurant_id bigint,
+   	name string,
+    restaurant_tag string,
+    geohash7 string COMMENT 'geo_hash前七位',
+    cat0_name string COMMENT '一级餐厅品类',
+    cat1_name string COMMENT '二级餐厅品类',
+    strategy string COMMENT '满减策略',
+    strategy_code string COMMENT '满减策略编码',
+    strategy_detail string COMMENT '满减细则',
+    lastest_subsidy string COMMENT '最近三次订单补贴情况',
+    is_multi_strategy int COMMENT '是否为多个满减策略',
+    cur_month_total double COMMENT '本月截止当前的销售额',
+    lst_month_total double COMMENT '上一月销售额',
+    sales_ratio double COMMENT '本月截止当前的销售额与上月销售额比值'
+    )
+PARTITIONED BY (dt string)
+LOCATION  '/data/external_table/dm/dm_mdl_restaurant_eleme_subsidy_strategy';
 
 -- drop table dm.dm_ups_restaurant_info;
 -- create table dm.dm_ups_restaurant_info(

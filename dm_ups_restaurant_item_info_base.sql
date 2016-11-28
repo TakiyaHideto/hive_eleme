@@ -50,7 +50,8 @@ FROM
         dw.dw_prd_restaurant_wide
     WHERE
         ---- 类型100是测试餐厅，1是正常的
-        dt = '${day}' AND is_valid = 1 AND type != 100
+        ---- dt = '${day}' AND is_valid = 1 AND type != 100
+        dt = '${day}' AND type != 100
 ) a
 LATERAL VIEW
 EXPLODE(a.info_array) mytable AS item

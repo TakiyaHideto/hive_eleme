@@ -23,10 +23,9 @@ create table temp.temp_mdl_restaurant_recent_7_returning_customer as
             user_id,
             count(distinct id) as order_cnt
         from 
-            dw.dw_trd_order_wide
+            dw.dw_trd_order_wide_day
         where 
-            dt='${day}' and 
-            datediff('${day}',order_date)<8 and 
+            dt>=get_date('${day}',-8) and 
             order_status=1 and
             user_id<>886
         group by 
@@ -34,7 +33,7 @@ create table temp.temp_mdl_restaurant_recent_7_returning_customer as
             user_id
     ) t
     where 
-        t.order_cnt>1
+        t.order_cnt>=1
 ;
 
 
@@ -52,10 +51,9 @@ create table temp.temp_mdl_restaurant_recent_30_returning_customer as
             user_id,
             count(distinct id) as order_cnt
         from 
-            dw.dw_trd_order_wide
+            dw.dw_trd_order_wide_day
         where 
-            dt='${day}' and 
-            datediff('${day}',order_date)<31 and 
+            dt>=get_date('${day}',-31) and 
             order_status=1 and
             user_id<>886
         group by 
@@ -63,7 +61,7 @@ create table temp.temp_mdl_restaurant_recent_30_returning_customer as
             user_id
     ) t
     where 
-        t.order_cnt>1
+        t.order_cnt>=1
 ;
 
 
@@ -82,10 +80,9 @@ create table temp.temp_mdl_restaurant_recent_7_trade as
     from (
         select *
         from 
-            dw.dw_trd_order_wide
+            dw.dw_trd_order_wide_day
         where  
-            dt='${day}' and 
-            datediff('${day}',order_date)<8 and 
+            dt>=get_date('${day}',-8) and 
             order_status=1 and 
             user_id<>886
     ) t1
@@ -128,10 +125,9 @@ create table temp.temp_mdl_restaurant_recent_30_trade as
         select 
             *
         from 
-            dw.dw_trd_order_wide
+            dw.dw_trd_order_wide_day
         where 
-            dt='${day}' and 
-            datediff('${day}',order_date)<31 and 
+            dt>=get_date('${day}',-31) and 
             order_status=1 and
             user_id<>886
         ) t1
@@ -252,10 +248,9 @@ create table temp.temp_mdl_restaurant_long_term_trade as
         sum(case when substr(created_at,12,5)>='20:00' and substr(created_at,12,5)<'24:00' then total else 0 end) as night_sales_amt,
         sum(case when substr(created_at,12,5)>='00:00' and substr(created_at,12,5)<'10:00' then total else 0 end) as other_sales_amt
     from 
-        dw.dw_trd_order_wide
+        dw.dw_trd_order_wide_day
     where 
-        dt='${day}' and 
-        order_date>='2016-01-01' and 
+        dt>=get_date('${day}',-180) and 
         order_status=1 and
         user_id<>886
     group by 
@@ -280,10 +275,9 @@ from (
             select 
                 restaurant_id, id
             from 
-                dw.dw_trd_order_wide
+                dw.dw_trd_order_wide_day
             where 
-                dt='${day}' and 
-                datediff('${day}',order_date)<31 and
+                dt>=get_date('${day}',-31) and 
                 order_status=1
         ) t1
         join (

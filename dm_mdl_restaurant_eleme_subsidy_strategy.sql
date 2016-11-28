@@ -10,7 +10,7 @@
 drop table temp.temp_shop_subsidy_geohash_cluster_ord_info;
 create table temp.temp_shop_subsidy_geohash_cluster_ord_info as 
     select 
-        substr(geohash_of_latlng(t1.latitude,t1.longitude),0,6) as geo_cluster,
+        substr(geohash_of_latlng(t1.latitude,t1.longitude),0,7) as geo_cluster,
         count(order_id) as order_cnt,
         percentile_approx(total,0.5) as order_price_median,
         stddev(total) as order_price_stddev,
@@ -44,9 +44,7 @@ create table temp.temp_shop_subsidy_geohash_cluster_ord_info as
     where
         t2.total<=300
     group by 
-        substr(geohash_of_latlng(t1.latitude,t1.longitude),0,6)
-    having
-        order_cnt>2000
+        substr(geohash_of_latlng(t1.latitude,t1.longitude),0,7)
 ;
 
 
@@ -187,7 +185,6 @@ create table temp.temp_shop_subsidy_dianping_rst as
         t1.restaurant_id=t2.restaurant_id
         )
 ;
-
 
 
 -- sub task 4.1: 根据点评品质餐厅扩充相似品质餐厅,使用cosine相似度方法
@@ -340,7 +337,7 @@ create table temp.temp_shop_subsidy_high_quality_rst as
         from 
             temp.temp_shop_subsidy_high_quality_rst_cosine
         where
-            score>0.5
+            score>0.9
         ) t1
     join(
         select
@@ -351,10 +348,10 @@ create table temp.temp_shop_subsidy_high_quality_rst as
         where 
             dt='${day}' and 
             datediff('${day}',order_date)<31 and
-            status_code=2
+            order_status=1
         group by 
             restaurant_id 
-        having order_cnt>30  
+        having order_cnt>1500  
         ) t2
     on(
         t1.restaurant_id=t2.restaurant_id
@@ -374,13 +371,17 @@ create table temp.temp_shop_subsidy_new_rst as
     from(
         select 
             id as restaurant_id,
-            substr(geohash_of_latlng(latitude,longitude),0,6) as geohash
+            substr(geohash_of_latlng(latitude,longitude),0,7) as geohash,
+            is_license_no,
+            is_royalty,
+            is_kitchen,
+            is_sia
         from 
-            dw.dw_prd_restaurant
+            dw.dw_prd_restaurant_wide
         where 
-            dt='${day}' 
-            and is_valid=1 
-            and datediff('${day}',created_at)<31
+            dt='${day}' and 
+            is_valid=1 and 
+            datediff('${day}',created_at)<31
         ) t1
     join(
         select
@@ -395,10 +396,14 @@ create table temp.temp_shop_subsidy_new_rst as
         t1.geohash=t2.geo_cluster
         )
     where 
-        t2.order_cnt>15000
+        t1.is_license_no=1  
     group by 
         t1.restaurant_id
+    having
+        order_cnt>1000
 ;
+
+
 
 
 -- sub task 6: 汇总需要补贴的餐厅
@@ -437,17 +442,19 @@ create table temp.temp_shop_subsidy_complement_rst as
     select
         t1.restaurant_id,
         t1.order_cnt,
+        t1.total,
         '0_complement' as rst_tag
     from(
         select 
             restaurant_id,
-            count(id)/max(month(created_at)) as order_cnt
+            count(id) as order_cnt,
+            sum(total) as total
         from 
             dw.dw_trd_order_wide
         where 
             dt='${day}' and
-            order_date>='2016-01-01' and 
-            status_code=2
+            datediff('${day}',created_at)<61 and 
+            order_status=1
         group by 
             restaurant_id
         ) t1
@@ -461,8 +468,7 @@ create table temp.temp_shop_subsidy_complement_rst as
         t1.restaurant_id=t2.restaurant_id
         )
     where 
-        t2.restaurant_id is null and
-        t1.order_cnt > 800
+        t2.restaurant_id is null
 ;
 
 
@@ -470,8 +476,10 @@ create table temp.temp_shop_subsidy_complement_rst as
 drop table temp.temp_shop_subsidy_all_rst;
 create table temp.temp_shop_subsidy_all_rst as
     select
-        t.restaurant_id,
-        max(t.rst_tag) as rst_tag
+        a.restaurant_id,
+        max(a.rst_tag) as rst_tag,
+        max(b.cat0_name) as cat0_name,
+        max(b.cat1_name) as cat1_name
     from(
         select 
             restaurant_id,
@@ -484,47 +492,66 @@ create table temp.temp_shop_subsidy_all_rst as
             rst_tag
         from 
             temp.temp_shop_subsidy_complement_rst
-        ) t
-    group by t.restaurant_id
+        ) a
+    join(
+        select
+            restaurant_id,
+            cat0_name,
+            cat1_name
+        from 
+            rec.rec_prf_restaurant_category_info 
+        where 
+            dt='${day}' and
+            cat1_name not in ('鲜花','药品','超市','零食','水果','蔬菜','营养品')
+        ) b
+    on(
+        a.restaurant_id=b.restaurant_id
+        )
+    group by a.restaurant_id
 ;
 
 
+
 -- sub task 9: 为每家餐厅分配活动补贴策略
-drop table temp.temp_mdl_rst_subsidy_strategy;
-create table temp.temp_mdl_rst_subsidy_strategy as 
+drop table temp.temp_mdl_rst_subsidy_strategy_sub1;
+create table temp.temp_mdl_rst_subsidy_strategy_sub1 as 
     select
         t1.restaurant_id,
+        t2.name,
+        t1.rst_tag,
+        t1.cat0_name,
+        t1.cat1_name,
         case when t2.is_premium=1 then 
                 case when t2.total_percentile_3_rst/t2.total_percentile_8_rst>0.7 then
                     concat(
-                    '满',cast(t2.total_percentile_8_rst*1.2 as int),'减',cast(t2.total_percentile_8_rst*(0.25-0.05*rand()*rand()*rand()) as int)
+                    '满',cast(t2.total_percentile_8_rst*1.2 as int),'减',cast(t2.total_percentile_8_rst*(0.25-0.05*rand()*rand()) as int)
                     )
                 else
                     concat(
-                        '满',cast(t2.total_percentile_8_rst*1.2 as int),'减',cast(t2.total_percentile_8_rst*(0.25-0.05*rand()*rand()*rand()) as int),'|',
-                        '满',cast(t2.total_percentile_3_rst*1.2 as int),'减',cast(t2.total_percentile_3_rst*(0.2-0.1*rand()*rand()*rand()) as int)
+                        '满',cast(t2.total_percentile_8_rst*1.2 as int),'减',cast(t2.total_percentile_8_rst*(0.25-0.05*rand()*rand()) as int),'|',
+                        '满',cast(t2.total_percentile_3_rst*1.2 as int),'减',cast(t2.total_percentile_3_rst*(0.2-0.1*rand()*rand()) as int)
                         )
                 end
             when t1.rst_tag!='3_new' then 
                 case when t2.total_percentile_3_rst/t2.total_percentile_8_rst>0.7 then
                     concat(
-                        '满',cast(t2.total_percentile_8_rst as int),'减',cast(t2.total_percentile_8_rst*(0.25-0.05*rand()*rand()*rand()) as int)
+                        '满',cast(t2.total_percentile_8_rst as int),'减',cast(t2.total_percentile_8_rst*(0.25-0.05*rand()*rand()) as int)
                         )
                 else
                     concat(
-                        '满',cast(t2.total_percentile_8_rst as int),'减',cast(t2.total_percentile_8_rst*(0.25-0.05*rand()*rand()*rand()) as int),'|',
-                        '满',cast(t2.total_percentile_3_rst as int),'减',cast(t2.total_percentile_3_rst*(0.2-0.1*rand()*rand()*rand()) as int)
+                        '满',cast(t2.total_percentile_8_rst as int),'减',cast(t2.total_percentile_8_rst*(0.25-0.05*rand()*rand()) as int),'|',
+                        '满',cast(t2.total_percentile_3_rst as int),'减',cast(t2.total_percentile_3_rst*(0.2-0.1*rand()*rand()) as int)
                         )
                 end
             else 
                 case when t2.total_percentile_3_rst/t2.total_percentile_8_rst>0.7 then
                     concat(
-                        '满',cast(t2.total_percentile_8_geo as int),'减',cast(t2.total_percentile_8_geo*(0.25-0.05*rand()*rand()*rand()) as int)
+                        '满',cast(t2.total_percentile_8_geo as int),'减',cast(t2.total_percentile_8_geo*(0.25-0.05*rand()*rand()) as int)
                         )
                 else
                     concat(
-                        '满',cast(t2.total_percentile_8_geo as int),'减',cast(t2.total_percentile_8_geo*(0.25-0.05*rand()*rand()*rand()) as int),'|',
-                        '满',cast(t2.total_percentile_3_geo as int),'减',cast(t2.total_percentile_3_geo*(0.2-0.1*rand()*rand()*rand()) as int)
+                        '满',cast(t2.total_percentile_8_geo as int),'减',cast(t2.total_percentile_8_geo*(0.25-0.05*rand()*rand()) as int),'|',
+                        '满',cast(t2.total_percentile_3_geo as int),'减',cast(t2.total_percentile_3_geo*(0.2-0.1*rand()*rand()) as int)
                         )
                 end
             end as strategy,
@@ -572,19 +599,21 @@ create table temp.temp_mdl_rst_subsidy_strategy as
     join(
         select
             a.restaurant_id,
+            a.name,
             a.is_premium,
             a.geo_cluster,
-            bound_data(b.total_percentile_8,10,150) as total_percentile_8_rst,
-            bound_data(b.total_percentile_5,10,150) as total_percentile_5_rst,
-            bound_data(b.total_percentile_3,10,150) as total_percentile_3_rst,
-            bound_data(c.total_percentile_8,10,150) as total_percentile_8_geo,
-            bound_data(c.total_percentile_5,10,150) as total_percentile_5_geo,
-            bound_data(c.total_percentile_3,10,150) as total_percentile_3_geo
+            bound_data(b.total_percentile_8,15,150) as total_percentile_8_rst,
+            bound_data(b.total_percentile_5,15,150) as total_percentile_5_rst,
+            bound_data(b.total_percentile_3,15,150) as total_percentile_3_rst,
+            bound_data(c.total_percentile_8,15,150) as total_percentile_8_geo,
+            bound_data(c.total_percentile_5,15,150) as total_percentile_5_geo,
+            bound_data(c.total_percentile_3,15,150) as total_percentile_3_geo
         from(
             select 
                 id as restaurant_id,
+                name,
                 is_premium,
-                substr(geohash_of_latlng(latitude,longitude),0,6) as geo_cluster,
+                substr(geohash_of_latlng(latitude,longitude),0,7) as geo_cluster,
                 min_deliver_amount
             from
                 dw.dw_prd_restaurant
@@ -595,16 +624,17 @@ create table temp.temp_mdl_rst_subsidy_strategy as
         left outer join(
             select
                 restaurant_id,
-                bound_data(percentile_approx(total,0.8),10,150) as total_percentile_8,
-                bound_data(percentile_approx(total,0.5),10,150) as total_percentile_5,
-                bound_data(percentile_approx(total,0.3),10,150) as total_percentile_3
+                bound_data(percentile_approx(total,0.8),15,150) as total_percentile_8,
+                bound_data(percentile_approx(total,0.5),15,150) as total_percentile_5,
+                bound_data(percentile_approx(total,0.3),15,150) as total_percentile_3
             from
                 dw.dw_trd_order_wide
             where
                 dt='${day}' and
                 datediff('${day}',order_date)<180 and 
                 order_status=1
-            group by restaurant_id
+            group by 
+                restaurant_id
             ) b
         on(
             a.restaurant_id=b.restaurant_id
@@ -615,7 +645,169 @@ create table temp.temp_mdl_rst_subsidy_strategy as
             a.geo_cluster=c.geo_cluster
             )
         ) t2
-    on t1.restaurant_id=t2.restaurant_id
+    on (
+        t1.restaurant_id=t2.restaurant_id
+        )
+;
+
+
+drop table temp.temp_mdl_rst_subsidy_strategy_sub2;
+create table temp.temp_mdl_rst_subsidy_strategy_sub2 as 
+    select 
+        t1.restaurant_id,
+        t1.name,
+        t1.rst_tag,
+        t3.geo_cluster,
+        t1.cat0_name,
+        t1.cat1_name,
+        t1.strategy,
+        t1.strategy_code,
+        t1.is_multi_strategy,
+        t2.cur_month_total,
+        t2.lst_month_total,
+        round(t2.cur_month_total/t2.lst_month_total,2) as sales_ratio
+    from
+        temp.temp_mdl_rst_subsidy_strategy_sub1 t1
+    join(
+        select
+            restaurant_id,
+            round(sum(
+                case when month(created_at)=month('${day}') then
+                        total
+                    else
+                        0
+                    end),2) as cur_month_total,
+            round(sum(
+                case when month(created_at)=month('${day}')-1 then
+                        total
+                    else
+                        0
+                    end),2) as lst_month_total
+        from
+            dw.dw_trd_order_wide
+        where  
+            dt='${day}' and 
+            datediff('${day}',created_at)<61 and
+            order_status=1
+        group by 
+            restaurant_id
+        ) t2
+    on(
+        t1.restaurant_id=t2.restaurant_id
+        )
+    join(
+        select
+            id as restaurant_id,
+            substr(geohash_of_latlng(latitude,longitude),0,7) as geo_cluster
+        from 
+            dw.dw_prd_restaurant
+        where 
+            dt='${day}' and 
+            is_valid=1
+        ) t3
+    on(
+        t1.restaurant_id=t3.restaurant_id
+        )
+;
+
+
+drop table temp.temp_mdl_rst_cate_eleme_subsidy_scale;
+create table temp.temp_mdl_rst_cate_eleme_subsidy_scale as 
+    select 
+        b.cat1_name, 
+        round(sum(restaurant_subsidy)/(sum(eleme_subsidy)+sum(restaurant_subsidy)),2) as rst_subsidy_scale, 
+        round(sum(eleme_subsidy)/(sum(eleme_subsidy)+sum(restaurant_subsidy)),2) as ele_subsidy_scale
+    from(
+        select 
+            restaurant_id,
+            sum(restaurant_subsidy) as restaurant_subsidy, 
+            sum(eleme_subsidy) as eleme_subsidy
+        from 
+            dw.dw_trd_order_wide 
+        where 
+            dt='${day}' and 
+            order_status=1 and 
+            datediff('${day}',created_at)<31 
+        group by 
+            restaurant_id
+        ) a
+    join(
+        select 
+            restaurant_id,
+            cat1_name 
+        from 
+            rec.rec_prf_restaurant_category_info 
+        where 
+            dt='${day}'
+        ) b
+    on(
+        a.restaurant_id=b.restaurant_id
+        )
+    group by 
+        b.cat1_name
+;
+
+
+drop table temp.temp_mdl_rst_subsidy_strategy;
+create table temp.temp_mdl_rst_subsidy_strategy as 
+    select
+        t1.restaurant_id,
+        name,
+        rst_tag,
+        geo_cluster,
+        cat0_name,
+        t1.cat1_name,
+        strategy,
+        strategy_code,
+        case when is_multi_strategy=1 then
+                concat('ele补',round(cast(split(split(strategy_code,'\\|')[0],',')[1] as int)*bound_data(ele_subsidy_scale+0.03,0,1),2),',',
+                       'rst补贴',round(cast(split(split(strategy_code,'\\|')[0],',')[1] as int)*bound_data(rst_subsidy_scale-0.03,0,1),2),'|',
+                       'ele补',round(cast(split(split(strategy_code,'\\|')[1],',')[1] as int)*bound_data(ele_subsidy_scale+0.03,0,1),2),',',
+                       'rst补贴',round(cast(split(split(strategy_code,'\\|')[1],',')[1] as int)*bound_data(rst_subsidy_scale-0.03,0,1),2)
+                       ) 
+            else
+                concat('ele补',round(cast(split(strategy_code,',')[1] as int)*bound_data(ele_subsidy_scale+0.03,0,1),2),',',
+                       'rst补贴',round(cast(split(strategy_code,',')[1] as int)*bound_data(rst_subsidy_scale-0.03,0,1),2)
+                       ) 
+            end as strategy_detail,
+        lastest_subsidy,
+        is_multi_strategy,
+        cur_month_total,
+        lst_month_total,
+        sales_ratio
+    from 
+        temp.temp_mdl_rst_subsidy_strategy_sub2 t1
+    join 
+        temp.temp_mdl_rst_cate_eleme_subsidy_scale t2
+    on (
+        t1.cat1_name=t2.cat1_name
+        )
+    join(
+        select
+            t.restaurant_id,
+            concat_ws(',',collect_list(concat('(ele补',eleme_subsidy,'rst补',restaurant_subsidy,')'))) as lastest_subsidy
+        from(
+            select
+                restaurant_id,
+                created_at,
+                eleme_subsidy,
+                restaurant_subsidy,
+                row_number() over (partition by restaurant_id order by created_at desc) rno
+            from
+                dw.dw_trd_order_wide
+            where 
+                dt='${day}' and
+                datediff('${day}',created_at)<3 and
+                order_status=1
+            ) t
+        where 
+            t.rno<4
+        group by 
+            t.restaurant_id
+        ) t3
+    on(
+        t1.restaurant_id=t3.restaurant_id
+        )
 ;
 
 
@@ -623,9 +815,19 @@ create table temp.temp_mdl_rst_subsidy_strategy as
 insert overwrite table dm.dm_mdl_restaurant_eleme_subsidy_strategy partition(dt='${day}')
     select
         restaurant_id,
+        name,
+        rst_tag,
+        geo_cluster,
+        cat0_name,
+        cat1_name,
         strategy,
         strategy_code,
-        is_multi_strategy
+        strategy_detail,
+        lastest_subsidy,
+        is_multi_strategy,
+        cur_month_total,
+        lst_month_total,
+        sales_ratio
     from 
         temp.temp_mdl_rst_subsidy_strategy
     where 
@@ -636,13 +838,22 @@ insert overwrite table dm.dm_mdl_restaurant_eleme_subsidy_strategy partition(dt=
 
 
 
-
 insert overwrite table dm.dm_mdl_restaurant_eleme_subsidy_strategy partition(dt='3000-12-31')
     select
         restaurant_id,
+        name,
+        rst_tag,
+        geo_cluster,
+        cat0_name,
+        cat1_name,
         strategy,
         strategy_code,
-        is_multi_strategy
+        strategy_detail,
+        lastest_subsidy,
+        is_multi_strategy,
+        cur_month_total,
+        lst_month_total,
+        sales_ratio
     from 
         temp.temp_mdl_rst_subsidy_strategy
     where 

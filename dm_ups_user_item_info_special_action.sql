@@ -68,6 +68,8 @@ create table temp.temp_mdl_user_order_last_date as
 ;
 
 
+
+
 -- sub task 3: 餐厅专注度
 drop table temp.temp_mdl_user_order_restaurant_concentration;
 create table temp.temp_mdl_user_order_restaurant_concentration as 
@@ -79,9 +81,10 @@ create table temp.temp_mdl_user_order_restaurant_concentration as
             user_id,
             count(distinct restaurant_id)/count(distinct id) as ratio
         from
-            dw.dw_trd_order_wide
+            dw.dw_trd_order_wide_day
         where 
-            dt='${day}' and
+            dt>=get_date('${day}',-59) and
+            dt<='${day}' and
             order_status=1
         group by 
             user_id
@@ -97,13 +100,15 @@ create table temp.temp_mdl_user_order_payment_price_flactuation_index as
         stddev(if(datediff('${day}',order_date)<8,eleme_order_total,0)) as flac_index_7,
         stddev(if(datediff('${day}',order_date)<31,eleme_order_total,0)) as flac_index_30
     from
-        dw.dw_trd_order_wide
+        dw.dw_trd_order_wide_day
     where 
-        dt='${day}' and
+        dt>=get_date('${day}',-59) and
+        dt<='${day}' and
         order_status=1
     group by 
         user_id
 ;
+
 
 
 --sub task 5: 用户接受配送的均值以及浮动指数
@@ -111,22 +116,109 @@ drop table temp.temp_mdl_user_order_deliver_time;
 create table temp.temp_mdl_user_order_deliver_time as 
     select
         user_id,
-        t.deliver_time_avg/60 as deliver_time_index_avg,
-        t.deliver_time_stddev/60 as deliver_time_index_stddev
+        max(t.deliver_time_avg/60) as deliver_time_index_avg,
+        max(t.deliver_time_stddev/60) as deliver_time_index_stddev
     from(
         select
             user_id,
             avg(unix_timestamp(settled_at)-unix_timestamp(active_at)) as deliver_time_avg,
             stddev(unix_timestamp(settled_at)-unix_timestamp(active_at)) as deliver_time_stddev
         from 
-            dw.dw_trd_order_wide
+            dw.dw_trd_order_wide_day
         where
-            dt='${day}' and
+            dt>=get_date('${day}',-59) and
+            dt<='${day}' and
             order_status=1
         group by
             user_id
             ) t
+    group by
+        user_id
 ;
+
+
+
+drop table temp.temp_mdl_last_restaurant_order_info;
+create table temp.temp_mdl_last_restaurant_order_info as 
+    select
+        a.user_id,
+        max(a.restaurant_id) as last_order_shop_id,
+        concat('[',concat_ws(',',collect_set(concat('\"',b.cat1_name,'\"'))),']') as last_order_category_id
+    from(
+        select
+            t.user_id,
+            t.restaurant_id,
+            t.last_order_date,
+            row_number() over (partition by t.user_id order by t.last_order_date) as rno
+        from(
+            select
+                user_id,
+                restaurant_id,
+                max(order_date) as last_order_date
+            from
+                dw.dw_trd_order_wide_day
+            where 
+                dt>=get_date('${day}',-59) and
+                dt<='${day}' and
+                order_status=1
+            group by 
+                user_id,
+                restaurant_id
+            ) t
+        ) a
+    join (
+        select
+            restaurant_id,
+            cat1_name
+        from 
+            rec.rec_prf_restaurant_category_info
+        where 
+            dt='${day}'
+        ) b
+    on(
+        a.restaurant_id=b.restaurant_id
+        )
+    where 
+        a.rno=1
+    group by 
+        a.user_id
+;
+
+
+
+drop table temp.temp_mdl_food_amount_info;
+create table temp.temp_mdl_food_amount_info as
+    select
+        b.user_id,
+        avg(price) as food_amt_avg
+    from(
+        select
+            order_id,
+            price
+        from
+            dw.dw_trd_order_item
+        where 
+            dt='${day}' and 
+            datediff('${day}',created_at)<=75
+        ) a
+    join (
+        select 
+            user_id,
+            id as order_id
+        from 
+            dw.dw_trd_order_wide_day
+        where
+            dt>=get_date('${day}',-75) and
+            dt<='${day}' and
+            order_status=1
+        ) b
+    on(
+        a.order_id=b.order_id
+        )
+    group by 
+        b.user_id
+;
+
 
 
 
@@ -200,6 +292,45 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='trd
                 concat('deliver_time_index_stddev=', round(deliver_time_index_stddev,2))
             ) as info_array
         from temp.temp_mdl_user_order_deliver_time
+    ) t
+    lateral view explode(t.info_array) tmp as item
+    where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
+
+    union all
+    select 
+        t.user_id, 
+        'trd' as top_category, 
+        split(item,'=')[0] as attr_key, 
+        split(item,'=')[1] as attr_value, 
+        '0' as is_json, 
+        '${day}' as update_time
+    from(
+        select 
+            user_id,
+            array(
+                concat('last_order_shop_id=', last_order_shop_id),
+                concat('last_order_category_id=', last_order_category_id)
+            ) as info_array
+        from temp.temp_mdl_last_restaurant_order_info
+    ) t
+    lateral view explode(t.info_array) tmp as item
+    where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
+
+    union all
+    select 
+        t.user_id, 
+        'trd' as top_category, 
+        split(item,'=')[0] as attr_key, 
+        split(item,'=')[1] as attr_value, 
+        '0' as is_json, 
+        '${day}' as update_time
+    from(
+        select 
+            user_id,
+            array(
+                concat('food_amt_avg=', round(food_amt_avg,2))
+            ) as info_array
+        from temp.temp_mdl_food_amount_info
     ) t
     lateral view explode(t.info_array) tmp as item
     where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0

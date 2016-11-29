@@ -308,7 +308,25 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='trd
         select 
             user_id,
             array(
-                concat('last_order_shop_id=', last_order_shop_id),
+                concat('last_order_shop_id=', last_order_shop_id)
+            ) as info_array
+        from temp.temp_mdl_last_restaurant_order_info
+    ) t
+    lateral view explode(t.info_array) tmp as item
+    where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
+
+    union all
+    select 
+        t.user_id, 
+        'trd' as top_category, 
+        split(item,'=')[0] as attr_key, 
+        split(item,'=')[1] as attr_value, 
+        '1' as is_json, 
+        '${day}' as update_time
+    from(
+        select 
+            user_id,
+            array(
                 concat('last_order_category_id=', last_order_category_id)
             ) as info_array
         from temp.temp_mdl_last_restaurant_order_info

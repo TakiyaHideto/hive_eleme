@@ -28,9 +28,10 @@ CREATE TABLE temp.temp_mdl_sia_restaurant_order AS
             restaurant_id,
             user_id
         FROM
-            dw.dw_trd_order_wide
+            dw.dw_trd_order_wide_day
         WHERE 
             dt='${day}' and
+            order_status=1 and
             user_id<>886
         ) t2
     ON (
@@ -40,30 +41,88 @@ CREATE TABLE temp.temp_mdl_sia_restaurant_order AS
         t2.user_id
 ;
 
- 
+
+DROP TABLE temp.temp_mdl_sia_restaurant_order_history;
+CREATE TABLE temp.temp_mdl_sia_restaurant_order_history as 
+    SELECT
+        *
+    FROM
+        dm.dm_ups_user_item_info
+    WHERE
+        dt='3000-12-31' AND 
+        flag='speciality_info'
+;
+
+
+
  
 -- sub task 2: import data to ups
 INSERT OVERWRITE TABLE dm.dm_ups_user_item_info PARTITION(dt='${day}', flag='speciality_info')
     SELECT
         user_id,
-        'speciality' AS top_category,
-        'is_sia' AS attr_key,
-        is_sia AS attr_value,
+        max(top_category) as top_category,
+        attr_key,
+        max(attr_value) as attr_value,
         0 AS is_json,
         '${day}' AS update_time
-    FROM
-        temp.temp_mdl_sia_restaurant_order
+    FROM(
+        SELECT
+            user_id,
+            'speciality' AS top_category,
+            'is_sia' AS attr_key,
+            is_sia AS attr_value,
+            0 AS is_json,
+            '${day}' AS update_time
+        FROM
+            temp.temp_mdl_sia_restaurant_order
+
+        UNION ALL
+        SELECT
+            user_id,
+            'speciality' AS top_category,
+            'is_sia' AS attr_key,
+            attr_value,
+            0 AS is_json,
+            '${day}' AS update_time
+        FROM
+            temp.temp_mdl_sia_restaurant_order_history
+       ) t
+    GROUP BY
+        user_id,
+        attr_key
 ;
 
 INSERT OVERWRITE TABLE dm.dm_ups_user_item_info PARTITION(dt='3000-12-31', flag='speciality_info')
     SELECT
         user_id,
-        'speciality' AS top_category,
-        'is_sia' AS attr_key,
-        is_sia AS attr_value,
+        max(top_category) as top_category,
+        attr_key,
+        max(attr_value) as attr_value,
         0 AS is_json,
         '${day}' AS update_time
-    FROM
-        temp.temp_mdl_sia_restaurant_order
-;
+    FROM(
+        SELECT
+            user_id,
+            'speciality' AS top_category,
+            'is_sia' AS attr_key,
+            is_sia AS attr_value,
+            0 AS is_json,
+            '${day}' AS update_time
+        FROM
+            temp.temp_mdl_sia_restaurant_order
 
+        UNION ALL
+        SELECT
+            user_id,
+            'speciality' AS top_category,
+            'is_sia' AS attr_key,
+            attr_value,
+            0 AS is_json,
+            '${day}' AS update_time
+        FROM
+            temp.temp_mdl_sia_restaurant_order_history
+       ) t
+    GROUP BY
+        user_id,
+        attr_key
+;

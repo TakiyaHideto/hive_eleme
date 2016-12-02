@@ -2,7 +2,7 @@
 # ** 文件名称： dm_mdl_restaurant_eleme_subsidy_budget.sql
 # ** 功能描述： 商家补贴策略经费预算
 # ** 创建者： jiahao.dong
-# ** 创建日期： ${day}
+# ** 创建日期： 2016-11-13
 #***************************************************************************************************
 
 
@@ -14,8 +14,8 @@ create table temp.temp_mdl_restaurant_cate_month_order_info as
         date_section, 
         year,
         month,
-        sum(order_cnt) as order_cnt,
-        sum(sales_total) as sales_total
+        round(sum(order_cnt),2) as order_cnt,
+        round(sum(sales_total),2) as sales_total
     from (
         select 
             cat1_name, 
@@ -23,7 +23,7 @@ create table temp.temp_mdl_restaurant_cate_month_order_info as
         from 
             rec.rec_prf_restaurant_category_info
         where 
-            dt='${day}'
+            dt='2016-11-13'
         ) t1
     join(
         select 
@@ -36,7 +36,7 @@ create table temp.temp_mdl_restaurant_cate_month_order_info as
         from 
             dw.dw_trd_order_wide
         where 
-            dt='${day}' and 
+            dt='2016-11-13' and 
             order_date>='2015-01-01' and 
             order_status=1
         group by 
@@ -58,12 +58,12 @@ create table temp.temp_mdl_restaurant_cate_month_order_info as
 
 
 
--- sub task 2: 各餐厅类别在订单增长、下降率
+-- sub task 2: 各餐厅类别在订单增长、下降率，以及销售额的增长下降率
 drop table temp.temp_mdl_restaurant_month_order_increase;
 create table temp.temp_mdl_restaurant_month_order_increase as 
     select
         cat1_name,
-        '${day}' as currnet_date,
+        '2016-11-13' as currnet_date,
         round((cur_month_ord_cnt-lst_month_ord_cnt)/lst_month_ord_cnt,2) as ord_cur_inc,
         round((nxt_month_ord_cnt-cur_month_ord_cnt)/cur_month_ord_cnt,2) as ord_nxt_inc,
         round((cur_month_sales_cnt-lst_month_sales_cnt)/lst_month_sales_cnt,2) as sales_cur_inc,
@@ -71,33 +71,33 @@ create table temp.temp_mdl_restaurant_month_order_increase as
     from(
         select
             cat1_name,
-            '${day}' as currnet_date,
-            max(case when month('${day}')=1 then 
-                    if(year=year('${day}')-2 and month=12,order_cnt,0)
+            '2016-11-13' as currnet_date,
+            max(case when month('2016-11-13')=1 then 
+                    if(year=year('2016-11-13')-2 and month=12,order_cnt,0)
                 else 
-                    if(year=year('${day}')-1 and month=month('${day}')-1,order_cnt,0)
+                    if(year=year('2016-11-13')-1 and month=month('2016-11-13')-1,order_cnt,0)
                 end) as lst_month_ord_cnt,
 
-            max(if(year=year('${day}')-1 and month=month('${day}'), order_cnt, 0)) as cur_month_ord_cnt,
+            max(if(year=year('2016-11-13')-1 and month=month('2016-11-13'), order_cnt, 0)) as cur_month_ord_cnt,
 
-            max(case when month('${day}')=12 then 
-                    if(year=year('${day}') and month=1,order_cnt,0)
+            max(case when month('2016-11-13')=12 then 
+                    if(year=year('2016-11-13') and month=1,order_cnt,0)
                 else
-                    if(year=year('${day}')-1 and month=month('${day}')+1, order_cnt, 0)
+                    if(year=year('2016-11-13')-1 and month=month('2016-11-13')+1, order_cnt, 0)
                 end) as nxt_month_ord_cnt,
 
-            max(case when month('${day}')=1 then 
-                    if(year=year('${day}')-2 and month=12,sales_total,0)
+            max(case when month('2016-11-13')=1 then 
+                    if(year=year('2016-11-13')-2 and month=12,sales_total,0)
                 else 
-                    if(year=year('${day}')-1 and month=month('${day}')-1,sales_total,0)
+                    if(year=year('2016-11-13')-1 and month=month('2016-11-13')-1,sales_total,0)
                 end) as lst_month_sales_cnt,
 
-            max(if(year=year('${day}')-1 and month=month('${day}'), sales_total, 0)) as cur_month_sales_cnt,
+            max(if(year=year('2016-11-13')-1 and month=month('2016-11-13'), sales_total, 0)) as cur_month_sales_cnt,
 
-            max(case when month('${day}')=12 then 
-                    if(year=year('${day}') and month=1,sales_total,0)
+            max(case when month('2016-11-13')=12 then 
+                    if(year=year('2016-11-13') and month=1,sales_total,0)
                 else
-                    if(year=year('${day}')-1 and month=month('${day}')+1, sales_total, 0)
+                    if(year=year('2016-11-13')-1 and month=month('2016-11-13')+1, sales_total, 0)
                 end) as nxt_month_sales_cnt
         from 
             temp.temp_mdl_restaurant_cate_month_order_info
@@ -108,7 +108,7 @@ create table temp.temp_mdl_restaurant_month_order_increase as
 
 
 
--- sub task 3:
+-- sub task 3: 提取每家餐厅上月订单信息
 drop table temp.temp_mdl_restaurant_month_order_subsidy;
 create table temp.temp_mdl_restaurant_month_order_subsidy as
     select
@@ -116,13 +116,13 @@ create table temp.temp_mdl_restaurant_month_order_subsidy as
         t2.restaurant_id,
         t1.total,
         case when is_multi_strategy=1 then
-                case when t1.total>split(split(strategy_code,'\\|')[0],',')[0] then 
-                        split(split(strategy_code,'\\|')[0],',')[1]
-                    when t1.total>split(split(strategy_code,'\\|')[1],',')[0] then
-                        split(split(strategy_code,'\\|')[1],',')[1]
-                    else
-                        0
-                    end
+            case when t1.total>split(split(strategy_code,'\\|')[0],',')[0] then 
+                    split(split(strategy_code,'\\|')[0],',')[1]
+                when t1.total>split(split(strategy_code,'\\|')[1],',')[0] then
+                    split(split(strategy_code,'\\|')[1],',')[1]
+                else
+                    0
+                end
             else
                 case when t1.total>split(strategy_code,',')[0] then
                         split(strategy_code,',')[1]
@@ -138,9 +138,9 @@ create table temp.temp_mdl_restaurant_month_order_subsidy as
         from 
             dw.dw_trd_order_wide
         where
-            dt='${day}' and 
+            dt='2016-11-13' and 
             order_status=1 and 
-            month(created_at)=month('${day}')-1
+            month(created_at)=month('2016-11-13')-1
         ) t1
     join(
         select
@@ -192,7 +192,7 @@ create table temp.temp_mdl_restaurant_month_order_subsidy_sum as
                 from 
                     rec.rec_prf_restaurant_category_info
                 where 
-                    dt='${day}'
+                    dt='2016-11-13'
                 ) t2
             on(
                 t1.restaurant_id=t2.restaurant_id

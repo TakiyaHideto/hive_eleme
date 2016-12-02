@@ -32,10 +32,9 @@ create table temp.temp_shop_subsidy_geohash_cluster_ord_info as
             restaurant_id,
             total
         from 
-            dw.dw_trd_order_wide
+            dw.dw_trd_order_wide_day
         where 
-            dt='${day}' and 
-            datediff('${day}',order_date)<31 and
+            dt>=get_date(-31) and
             order_status=1
         ) t2
     on (
@@ -187,7 +186,36 @@ create table temp.temp_shop_subsidy_dianping_rst as
 ;
 
 
--- sub task 4.1: 根据点评品质餐厅扩充相似品质餐厅,使用cosine相似度方法
+-- sub task 4: 抽取KA餐厅
+drop table temp.temp_mdl_rst_subsidy_ka_rst;
+create table temp.temp_mdl_rst_subsidy_ka_rst as 
+    select
+        id as restaurant_id
+    from 
+        dw.dw_prd_restaurant_wide
+    where 
+        dt='${day}' and 
+        bu_flag='GKA'
+    group by 
+        id
+;
+
+
+-- sub task 5: 抽取SIG餐厅
+drop table temp.temp_mdl_rst_subsidy_sig_rst;
+create table temp.temp_mdl_rst_subsidy_sig_rst as 
+    select
+        id as restaurant_id
+    from 
+        dw.dw_prd_restaurant_wide
+    where 
+        dt='${day}' and 
+        bu_flag='SIG'
+    group by 
+        id
+;
+
+-- sub task 6.1: 根据点评品质餐厅扩充相似品质餐厅,使用cosine相似度方法
 drop table temp.temp_shop_subsidy_high_quality_rst_cosine;
 create table temp.temp_shop_subsidy_high_quality_rst_cosine as 
     select 
@@ -324,7 +352,7 @@ create table temp.temp_shop_subsidy_high_quality_rst_cosine as
     on t1.rst_tag=t2.dianping_tag;
 
 
--- sub task 4.2: 筛选相似品质餐厅
+-- sub task 6.2: 筛选相似品质餐厅
 drop table temp.temp_shop_subsidy_high_quality_rst;
 create table temp.temp_shop_subsidy_high_quality_rst as 
     select
@@ -333,25 +361,25 @@ create table temp.temp_shop_subsidy_high_quality_rst as
         t2.order_cnt
     from(
         select
-            restaurant_id, score
+            restaurant_id, 
+            score
         from 
             temp.temp_shop_subsidy_high_quality_rst_cosine
         where
-            score>0.9
+            score>0.8
         ) t1
     join(
         select
             restaurant_id,
             count(id) as order_cnt
         from 
-            dw.dw_trd_order_wide
+            dw.dw_trd_order_wide_day
         where 
-            dt='${day}' and 
-            datediff('${day}',order_date)<31 and
+            dt>=get_date('${day}',-61) and
             order_status=1
         group by 
             restaurant_id 
-        having order_cnt>1500  
+        having order_cnt>0  
         ) t2
     on(
         t1.restaurant_id=t2.restaurant_id
@@ -360,7 +388,7 @@ create table temp.temp_shop_subsidy_high_quality_rst as
 
 
 
--- sub task 5: 抽取新餐厅
+-- sub task 7: 抽取新餐厅
 drop table temp.temp_shop_subsidy_new_rst;
 create table temp.temp_shop_subsidy_new_rst as
     select 
@@ -406,7 +434,7 @@ create table temp.temp_shop_subsidy_new_rst as
 
 
 
--- sub task 6: 汇总需要补贴的餐厅
+-- sub task 8: 汇总需要补贴的餐厅
 drop table temp.temp_shop_subsidy_unfilter_rst;
 create table temp.temp_shop_subsidy_unfilter_rst as 
     select 
@@ -430,13 +458,25 @@ create table temp.temp_shop_subsidy_unfilter_rst as
             '3_new' as rst_tag
         from 
             temp.temp_shop_subsidy_new_rst
+        union all
+        select 
+            restaurant_id,
+            '4_sig' as rst_tag
+        from 
+            temp.temp_mdl_rst_subsidy_sig_rst
+        union all
+        select 
+            restaurant_id,
+            '5_ka' as rst_tag
+        from 
+            temp.temp_mdl_rst_subsidy_ka_rst
         ) t
     group by 
         t.restaurant_id
 ;
  
 
--- sub task 7: 补充订单多的餐厅 
+-- sub task 9: 补充订单多的餐厅 
 drop table temp.temp_shop_subsidy_complement_rst;
 create table temp.temp_shop_subsidy_complement_rst as 
     select
@@ -450,10 +490,9 @@ create table temp.temp_shop_subsidy_complement_rst as
             count(id) as order_cnt,
             sum(total) as total
         from 
-            dw.dw_trd_order_wide
+            dw.dw_trd_order_wide_day
         where 
-            dt='${day}' and
-            datediff('${day}',created_at)<61 and 
+            dt>=get_date(-61) and
             order_status=1
         group by 
             restaurant_id
@@ -472,7 +511,7 @@ create table temp.temp_shop_subsidy_complement_rst as
 ;
 
 
--- sub task 8: 汇总所有餐厅
+-- sub task 10: 汇总所有餐厅
 drop table temp.temp_shop_subsidy_all_rst;
 create table temp.temp_shop_subsidy_all_rst as
     select
@@ -512,7 +551,7 @@ create table temp.temp_shop_subsidy_all_rst as
 
 
 
--- sub task 9: 为每家餐厅分配活动补贴策略
+-- sub task 11: 为每家餐厅分配活动补贴策略
 drop table temp.temp_mdl_rst_subsidy_strategy_sub1;
 create table temp.temp_mdl_rst_subsidy_strategy_sub1 as 
     select
@@ -628,10 +667,9 @@ create table temp.temp_mdl_rst_subsidy_strategy_sub1 as
                 bound_data(percentile_approx(total,0.5),15,150) as total_percentile_5,
                 bound_data(percentile_approx(total,0.3),15,150) as total_percentile_3
             from
-                dw.dw_trd_order_wide
+                dw.dw_trd_order_wide_day
             where
-                dt='${day}' and
-                datediff('${day}',order_date)<180 and 
+                dt>=get_date(-61) and
                 order_status=1
             group by 
                 restaurant_id
@@ -684,10 +722,9 @@ create table temp.temp_mdl_rst_subsidy_strategy_sub2 as
                         0
                     end),2) as lst_month_total
         from
-            dw.dw_trd_order_wide
+            dw.dw_trd_order_wide_day
         where  
-            dt='${day}' and 
-            datediff('${day}',created_at)<61 and
+            dt>=get_date(-61) and
             order_status=1
         group by 
             restaurant_id
@@ -716,18 +753,20 @@ create table temp.temp_mdl_rst_cate_eleme_subsidy_scale as
     select 
         b.cat1_name, 
         round(sum(restaurant_subsidy)/(sum(eleme_subsidy)+sum(restaurant_subsidy)),2) as rst_subsidy_scale, 
-        round(sum(eleme_subsidy)/(sum(eleme_subsidy)+sum(restaurant_subsidy)),2) as ele_subsidy_scale
+        round(sum(eleme_subsidy)/(sum(eleme_subsidy)+sum(restaurant_subsidy)),2) as ele_subsidy_scale,
+        round(sum(restaurant_subsidy)/sum(total),2) as rst_subsidy_ratio, 
+        round(sum(eleme_subsidy)/sum(total),2) as ele_subsidy_ratio
     from(
         select 
             restaurant_id,
             sum(restaurant_subsidy) as restaurant_subsidy, 
-            sum(eleme_subsidy) as eleme_subsidy
+            sum(eleme_subsidy) as eleme_subsidy,
+            sum(total) as total
         from 
-            dw.dw_trd_order_wide 
+            dw.dw_trd_order_wide_day 
         where 
-            dt='${day}' and 
-            order_status=1 and 
-            datediff('${day}',created_at)<31 
+            dt>get_date(-31) and 
+            order_status=1
         group by 
             restaurant_id
         ) a
@@ -794,10 +833,9 @@ create table temp.temp_mdl_rst_subsidy_strategy as
                 restaurant_subsidy,
                 row_number() over (partition by restaurant_id order by created_at desc) rno
             from
-                dw.dw_trd_order_wide
+                dw.dw_trd_order_wide_day
             where 
-                dt='${day}' and
-                datediff('${day}',created_at)<3 and
+                dt>=get_date(-3) and
                 order_status=1
             ) t
         where 

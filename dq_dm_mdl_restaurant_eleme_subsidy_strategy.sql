@@ -141,7 +141,7 @@ INSERT OVERWRITE TABLE dq.dq_table PARTITION(dt='${day}',p_dq_table='dm_mdl_rest
 
 
 
--- 检测试剂补贴金额上限 40
+-- 检测实际补贴金额上限 40
 INSERT OVERWRITE TABLE dq.dq_table PARTITION(dt='${day}',p_dq_table='dm_mdl_restaurant_eleme_subsidy_strategy', p_id=5)
     SELECT
         t.restaurant_id AS id,

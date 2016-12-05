@@ -10,8 +10,6 @@
  -- 计算所有有效餐厅的有效食物基本信息--
 
 DROP TABLE IF EXISTS temp.temp_hotfood_rec_rst_food_${dt};
-
-
 CREATE TABLE temp.temp_hotfood_rec_rst_food_${dt} AS
 SELECT f.restaurant_id,
        f.id food_id,
@@ -52,7 +50,117 @@ INNER JOIN
      AND name NOT LIKE '%旺仔%'
      AND name NOT LIKE '%统一%'
      AND name NOT LIKE '%百岁山%'
-     AND name NOT LIKE '%农夫山泉%') f ON (r.id = f.restaurant_id)
+     AND name NOT LIKE '%农夫山泉%'
+     AND name not LIKE '%百威%'
+     AND name NOT LIKE '%健力宝%'
+     AND name NOT LIKE '%芬达%'
+     AND name NOT LIKE '%美年达%'
+     AND name NOT LIKE '%汇源%'
+     AND name NOT LIKE '%美汁源%'
+     AND name NOT LIKE '%旺仔%'
+     AND name NOT LIKE '%营养快线%'
+     AND name NOT LIKE '%伊利%'
+     AND name NOT LIKE '%蒙牛%'
+     AND name NOT LIKE '%椰树%'
+     AND NAME NOT LIKE '%养乐多%'
+     AND name NOT LIKE '%脉动%'
+     AND name NOT LIKE '%格瓦斯%'
+     AND name NOT LIKE '%银鹭%'
+     AND name NOT LIKE '%天喔%'
+     AND name NOT LIKE '%东方树叶%'
+     AND name NOT LIKE '%七喜%'
+     AND name NOT LIKE '%雪碧%'
+     AND name NOT LIKE '%立顿%'
+     AND name NOT LIKE '%光明%'
+     AND name NOT LIKE '%农夫果园%'
+     AND name NOT LIKE '%娃哈哈%'
+     AND name NOT LIKE '%恒大冰泉%'
+     AND NAME NOT LIKE '%锐奥%'
+     AND NAME NOT LIKE '%雪花%'
+     AND name NOT LIKE '%青岛%'
+     AND name NOT LIKE '%燕京%'
+     AND name NOT LIKE '%珠江%'
+     AND name NOT LIKE '%茅台%'
+     AND name NOT LIKE '%五粮液%'
+     AND name NOT LIKE '%洋河大曲%'
+     AND name NOT LIKE '%泸州老窖%'
+     AND name NOT LIKE '%汾酒%'
+     AND name NOT LIKE '%郎酒%'
+     AND NAME NOT  LIKE '%哈尔滨%'
+     AND name NOT LIKE '%古井贡%'
+     AND name NOT LIKE '%西凤酒%'
+     AND name NOT LIKE '%董酒%'
+     AND name NOT LIKE '%剑南春%'
+     AND name NOT LIKE '%果粒橙%'
+     AND name NOT LIKE '冰红茶%'
+     AND name NOT LIKE '%味全%'
+     AND name NOT LIKE '%葡萄酒%'
+     AND name NOT LIKE '%饮料%'
+     AND name NOT LIKE '%干红%'
+     AND name NOT LIKE '%瓜子%'
+     AND name NOT LIKE '%优活%'
+     AND name NOT LIKE '%张裕%'
+     AND name not like '%张家街%'
+     AND name NOT LIKE '%小样%'
+     AND NAME!='绿茶'
+     AND NAME NOT LIKE '绿茶%ML'
+     AND NAME NOT LIKE '%豆奶'
+     AND NAME NOT LIKE '%优益C%'
+     AND NAME NOT LIKE '%益达%'
+     AND NAME NOT LIKE '%怡宝%'
+     AND NAME NOT LIKE '%小糊涂%'
+     AND NAME NOT LIKE '%香飘飘%'
+     AND NAME NOT LIKE '%维他%'
+     AND NAME NOT LIKE '%唯怡%'
+     AND NAME NOT LIKE '%旺旺%'
+     AND NAME NOT LIKE '%王致和%'
+     AND NAME NOT LIKE '%天喔%'
+     AND NAME NOT LIKE '%王致和%'
+     AND NAME NOT LIKE '%天地壹号%'
+     AND NAME NOT LIKE '%天地1号%'
+     AND NAME NOT LIKE '%特仑苏%'
+     AND NAME NOT LIKE '%酸梅%'
+    AND name NOT LIKE '%果橙%'
+    AND name NOT LIKE '%果粒%'
+    AND name NOT like '%苹果醋%'
+    AND NAME NOT LIKE '乌龙茶%'
+    AND NAME NOT LIKE '%洛神花茶%'
+    AND NAME NOT LIKE '%三得利%'
+    AND NAME NOT LIKE '%蜂蜜柚子茶%'
+     AND NAME NOT LIKE '%鸡尾酒%'
+     AND NAME NOT LIKE '%RIO%'
+     AND NAME NOT LIKE '%锐澳%'
+     AND NAME NOT LIKE '%贝塔%'
+     AND NAME NOT LIKE '%切块%'
+     AND NAME NOT LIKE '%切片%'
+     AND NAME NOT LIKE '%锐欧%'
+     AND NAME NOT LIKE '%荷兰乳%'
+     AND NAME NOT LIKE '%美年达%'
+     AND NAME NOT LIKE '%饮料%'
+     AND NAME NOT LIKE '%橙汁%'
+     AND NAME NOT LIKE '%VC果王%'
+     AND NAME NOT LIKE '%万利来%'
+     AND NAME NOT LIKE '%东北大板%'
+    AND NAME NOT LIKE '%乐事%'
+    AND NAME NOT like '%龙津%'
+    AND NAME NOT LIKE '%龙井绿茶%'
+    AND NAME NOT LIKE '%菠萝啤%'
+   AND NAME NOT LIKE '%妙恋%'
+   AND NAME NOT LIKE '%威龙%'
+AND NAME NOT LIKE '%优乐美%'
+AND NAME NOT LIKE '%圣牧%'
+AND NAME NOT LIKE '%女儿红%'
+AND NAME NOT LIKE '%孔府%'
+AND  name NOT  like '%宝矿力水特%'
+AND  name NOT  like '%李子园%'
+AND  name NOT  like '%原叶%'
+AND  name NOT  like '%麒麟茶饮料%'
+AND  name NOT  like '%草本乐%'
+AND  name NOT  like '%达利园%'
+AND  name NOT  like '%今麦郎%'
+AND  name NOT  like '%东鹏%'
+AND  name NOT  like '%乐百氏%'
+     ) f ON (r.id = f.restaurant_id)
 LEFT OUTER JOIN
   (SELECT *
    FROM dm.dm_prd_portrait_restaurant_food
@@ -104,7 +212,8 @@ LEFT OUTER JOIN
                               '奶站',
                               '粮油',
                               '茶',
-                              '药品')) t3 ON (t1.restaurant_id=t3.restaurant_id)
+                              '药品')
+    AND NAME LIKE '%次日达%') t3 ON (t1.restaurant_id=t3.restaurant_id)
 WHERE t3.restaurant_id IS NULL ;
 
  -- 餐厅数据
@@ -324,20 +433,20 @@ DROP TABLE IF EXISTS temp.temp_hotfood_rec_base_${dt};
 
 CREATE TABLE temp.temp_hotfood_rec_base_${dt} AS
 SELECT b.restaurant_id,
-       b.food_id,
-       b.price,
-       b.7_quantity,
-       b.30_quantity,
-       b.real_food_name,
-       b.normal_food_name,
-       b.tag_function,
-       b.tag_scene,
-       b.category,
-       b.rno rno,
-       d.cat0_name,
-       d.cat1_name,
-       if(b.rno<=12 AND (b.rno<=4 OR b.7_quantity>=20),1,0) is_use
-       --case when (b.rno<=15 or (b.food_name like '%月饼%' and b.rno<=30))  and (b.rno<=4 or b.7_quantity>=20 or b.is_gift=1) then 1 else 0 end is_use
+     b.food_id,
+     b.price,
+     b.7_quantity,
+     b.30_quantity,
+     b.real_food_name,
+     b.normal_food_name,
+     b.tag_function,
+     b.tag_scene,
+     b.category,
+     b.rno rno,
+     d.cat0_name,
+     d.cat1_name,
+     if(b.rno<=12 AND (b.rno<=4 OR b.7_quantity>=20),1,0) is_use
+     --case when (b.rno<=15 or (b.food_name like '%月饼%' and b.rno<=30))  and (b.rno<=4 or b.7_quantity>=20 or b.is_gift=1) then 1 else 0 end is_use
 FROM
   (SELECT *
    FROM temp.temp_hotfood_rec_rst_${dt}

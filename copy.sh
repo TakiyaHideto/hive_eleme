@@ -1,4 +1,6 @@
-grep -r jiahao.dong /Users/hideto/Project/hadoop_project > temp.txt
+rm *.sql
+grep -r jiahao.dong /Users/hideto/Project/hadoop_project/test/ > temp.txt
+grep -r jiahao.dong /Users/hideto/Project/hadoop_project/online/ >> temp.txt
 
 cat temp.txt | while read line
 do

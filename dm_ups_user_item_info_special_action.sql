@@ -75,7 +75,7 @@ drop table temp.temp_mdl_user_order_restaurant_concentration;
 create table temp.temp_mdl_user_order_restaurant_concentration as 
     select
         user_id,
-        1-t.ratio as rst_concentration_index
+        1-t.ratio as rest_focus_coef
     from(
         select
             user_id,
@@ -97,8 +97,8 @@ drop table temp.temp_mdl_user_order_payment_price_flactuation_index;
 create table temp.temp_mdl_user_order_payment_price_flactuation_index as
     select
         user_id,
-        stddev(if(datediff('${day}',order_date)<8,eleme_order_total,0)) as flac_index_7,
-        stddev(if(datediff('${day}',order_date)<31,eleme_order_total,0)) as flac_index_30
+        stddev(if(datediff('${day}',order_date)<8,eleme_order_total,0)) as recent_7_price_float,
+        stddev(if(datediff('${day}',order_date)<31,eleme_order_total,0)) as recent_30_price_float
     from
         dw.dw_trd_order_wide_day
     where 
@@ -116,8 +116,8 @@ drop table temp.temp_mdl_user_order_deliver_time;
 create table temp.temp_mdl_user_order_deliver_time as 
     select
         user_id,
-        max(t.deliver_time_avg/60) as deliver_time_index_avg,
-        max(t.deliver_time_stddev/60) as deliver_time_index_stddev
+        max(t.deliver_time_avg/60) as deliver_time_avg,
+        max(t.deliver_time_stddev/60) as deliver_time_std
     from(
         select
             user_id,
@@ -142,8 +142,8 @@ drop table temp.temp_mdl_last_restaurant_order_info;
 create table temp.temp_mdl_last_restaurant_order_info as 
     select
         a.user_id,
-        max(a.restaurant_id) as last_order_shop_id,
-        concat('[',concat_ws(',',collect_set(concat('\"',b.cat1_name,'\"'))),']') as last_order_category_id
+        max(a.restaurant_id) as last_order_rest_id,
+        concat('[',concat_ws(',',collect_set(concat('\"',b.cat1_name,'\"'))),']') as last_order_cat_id
     from(
         select
             t.user_id,
@@ -249,8 +249,8 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='trd
     select
         user_id,
         'trd' as top_category,
-        'rst_concentration_index' as attr_key,
-        round(rst_concentration_index,2) as attr_value,
+        'rest_focus_coef' as attr_key,
+        round(rest_focus_coef,2) as attr_value,
         '0' as is_json,
         from_unixtime(unix_timestamp()) as update_time
     from 
@@ -268,8 +268,8 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='trd
         select 
             user_id,
             array(
-                concat('flac_index_7=', round(flac_index_7,2)),
-                concat('flac_index_30=', round(flac_index_30,2))
+                concat('recent_7_price_float=', round(recent_7_price_float,2)),
+                concat('recent_30_price_float=', round(recent_30_price_float,2))
             ) as info_array
         from temp.temp_mdl_user_order_payment_price_flactuation_index
     ) t
@@ -288,8 +288,8 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='trd
         select 
             user_id,
             array(
-                concat('deliver_time_index_avg=', round(deliver_time_index_avg,2)),
-                concat('deliver_time_index_stddev=', round(deliver_time_index_stddev,2))
+                concat('deliver_time_avg=', round(deliver_time_avg,2)),
+                concat('deliver_time_std=', round(deliver_time_std,2))
             ) as info_array
         from temp.temp_mdl_user_order_deliver_time
     ) t
@@ -308,7 +308,7 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='trd
         select 
             user_id,
             array(
-                concat('last_order_shop_id=', last_order_shop_id)
+                concat('last_order_rest_id=', last_order_rest_id)
             ) as info_array
         from temp.temp_mdl_last_restaurant_order_info
     ) t
@@ -327,7 +327,7 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='trd
         select 
             user_id,
             array(
-                concat('last_order_category_id=', last_order_category_id)
+                concat('last_order_cat_id=', last_order_cat_id)
             ) as info_array
         from temp.temp_mdl_last_restaurant_order_info
     ) t

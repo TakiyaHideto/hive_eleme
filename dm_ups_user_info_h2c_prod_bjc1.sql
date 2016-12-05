@@ -67,5 +67,6 @@ parse_json_object(profile_json,'trd.order_again_rest_list') as order_again_rest_
 parse_json_object(profile_json,'trd.recent_30_active_day') as recent_30_active_day,
 parse_json_object(profile_json,'trd.recent_30_play_time') as recent_30_play_time,
 parse_json_object(profile_json,'trd.recent_30_order_cnt') as recent_30_order_cnt,
-parse_json_object(profile_json,'trd.recent_30_order_amt') as recent_30_order_amt
+parse_json_object(profile_json,'trd.recent_30_order_amt') as recent_30_order_amt,
+parse_json_object(profile_json,'speciality.delivery_priority') as delivery_priority
 from dm.dm_ups_user_info_inc where dt='3000-12-31';

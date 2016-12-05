@@ -210,7 +210,7 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='rec
     select 
         user_id, 
         'rec' as top_category,
-        'category_prefer' as attr_key, 
+        'food_cat_prefer' as attr_key, 
         attr_value, 
         '1' as is_json, 
         from_unixtime(unix_timestamp()) as update_time
@@ -222,7 +222,7 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='3000-12-31', flag=
     select 
         user_id, 
         'rec' as top_category,
-        'category_prefer' as attr_key, 
+        'food_cat_prefer' as attr_key, 
         attr_value, '1' as is_json, 
         from_unixtime(unix_timestamp()) as update_time
     from 

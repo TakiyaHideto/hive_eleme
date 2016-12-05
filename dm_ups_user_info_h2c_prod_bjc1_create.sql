@@ -1,6 +1,6 @@
 #***************************************************************************************************
-# **  文件名称： dm_ups_user_info_h2c_beta_create.sql
-# **  功能描述： 创建用户画像Cassandra链接表 beta环境
+# **  文件名称： dm_ups_user_info_h2c_prod_bjc1_create.sql
+# **  功能描述： 创建用户画像Cassandra链接表 线上环境
 #
 # **  创建者：jiahao.dong@ele.me
 # **  创建日期： 2016-12-01
@@ -10,8 +10,8 @@
 
 
 
-DROP TABLE dm_test.dm_ups_user_info_h2c_beta;
-CREATE EXTERNAL TABLE dm_test.dm_ups_user_info_h2c_beta
+DROP TABLE dm_test.dm_ups_user_info_h2c_prod_bjc1;
+CREATE EXTERNAL TABLE dm_test.dm_ups_user_info_h2c_prod_bjc1
 ( 
   user_id bigint, 
   email string, 
@@ -68,13 +68,7 @@ CREATE EXTERNAL TABLE dm_test.dm_ups_user_info_h2c_beta
   recent_30_order_cnt int,
   recent_30_order_amt float,
   delivery_priority int) STORED BY 'org.apache.hadoop.hive.cassandra.cql.CqlStorageHandler'
-WITH SERDEPROPERTIES ("yangdi" = "22222222222","cassandra.host" = "192.168.106.175,192.168.106.60","cassandra.port"="9042","cassandra.ks.name" = "rec","cassandra.table.name"="dm_ups_user_info","cassandra.username"="cassandra","cassandra.password"="cassandra") TBLPROPERTIES("cassandra.batchmutate.size"="5","zyy_test"="8888888","cassandra.consistency.level"="QUORUM");
-
-
-
-
-
-
+WITH SERDEPROPERTIES ("yangdi" = "22222222222","cassandra.host" = "10.0.45.125,10.0.45.155,10.0.45.170","cassandra.port"="9042","cassandra.ks.name" = "rec","cassandra.table.name"="dm_ups_user_info","cassandra.username"="cassandra","cassandra.password"="cassandra") TBLPROPERTIES("cassandra.batchmutate.size"="5","zyy_test"="8888888","cassandra.consistency.level"="QUORUM");
 
 
 

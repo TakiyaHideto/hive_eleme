@@ -224,7 +224,7 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='rec
     select
         user_id,
         'rec' as top_category,
-        'shop_behavior' as attr_key,
+        'rest_behavior' as attr_key,
         shop_order as attr_value,
         '1' as is_json,
         from_unixtime(unix_timestamp()) as update_time

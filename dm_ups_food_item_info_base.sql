@@ -26,6 +26,7 @@ create table temp.temp_ups_food_basic_info as
                 concat('is_new=',is_new),
                 concat('is_featured=',is_featured),
                 concat('is_gum=',is_gum),
+                concat('is_spicy',is_spicy),
                 concat('has_activity=',has_activity),
                 concat('sold_out=',sold_out),
                 concat('packing_fee=',packing_fee)

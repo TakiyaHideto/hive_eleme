@@ -160,7 +160,7 @@ insert overwrite table dm.dm_ups_food_item_info partition(dt='${day}', flag='tag
     select 
         food_id, 
         'tag' as top_category, 
-        'normalize_name' as attr_key, 
+        'cat_0' as attr_key, 
         normalize_name as attr_value, 
         '0' as is_json, 
         '${day}' as update_time
@@ -171,7 +171,7 @@ insert overwrite table dm.dm_ups_food_item_info partition(dt='${day}', flag='tag
     select 
         food_id, 
         'tag' as top_category, 
-        'category_fine' as attr_key, 
+        'cat_1' as attr_key, 
         category as attr_value, 
         '0' as is_json, 
         '${day}' as update_time
@@ -182,7 +182,7 @@ insert overwrite table dm.dm_ups_food_item_info partition(dt='${day}', flag='tag
     select 
         food_id, 
         'tag' as top_category, 
-        'category_coarse' as attr_key, 
+        'cat_2' as attr_key, 
         category as attr_value, 
         '0' as is_json, 
         '${day}' as update_time
@@ -217,7 +217,7 @@ insert overwrite table dm.dm_ups_food_item_info partition(dt='${day}', flag='tag
         'tag' as top_category, 
         'tag_function' as attr_key, 
         tag_function as attr_value, 
-        '0' as is_json, 
+        '1' as is_json, 
         '${day}' as update_time
     from 
         temp.temp_ups_food_tag_info_tag_function
@@ -228,7 +228,7 @@ insert overwrite table dm.dm_ups_food_item_info partition(dt='${day}', flag='tag
         'tag' as top_category, 
         'tag_scene' as attr_key, 
         tag_scene as attr_value, 
-        '0' as is_json, 
+        '1' as is_json, 
         '${day}' as update_time
     from 
         temp.temp_ups_food_tag_info_tag_scene

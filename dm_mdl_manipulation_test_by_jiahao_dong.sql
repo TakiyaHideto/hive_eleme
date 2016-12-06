@@ -23,8 +23,8 @@
 
 drop table dm.dm_mdl_restaurant_eleme_subsidy_strategy;
 CREATE EXTERNAL TABLE `dm.dm_mdl_restaurant_eleme_subsidy_strategy`(
-  	restaurant_id bigint,
-   	name string,
+    restaurant_id bigint,
+    name string,
     restaurant_tag string,
     geohash7 string COMMENT 'geo_hash前七位',
     cat0_name string COMMENT '一级餐厅品类',
@@ -36,6 +36,7 @@ CREATE EXTERNAL TABLE `dm.dm_mdl_restaurant_eleme_subsidy_strategy`(
     is_multi_strategy int COMMENT '是否为多个满减策略',
     cur_month_total double COMMENT '本月截止当前的销售额',
     lst_month_total double COMMENT '上一月销售额',
+    subsidy_total_limit double COMMENT '餐厅补贴总金额上限',
     sales_ratio double COMMENT '本月截止当前的销售额与上月销售额比值'
     )
 PARTITIONED BY (dt string)

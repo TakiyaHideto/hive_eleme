@@ -813,6 +813,7 @@ create table temp.temp_mdl_rst_subsidy_strategy as
         is_multi_strategy,
         cur_month_total,
         lst_month_total,
+        round(lst_month_total*0.09,2) as subsidy_total_limit,
         sales_ratio
     from 
         temp.temp_mdl_rst_subsidy_strategy_sub2 t1
@@ -865,6 +866,7 @@ insert overwrite table dm.dm_mdl_restaurant_eleme_subsidy_strategy partition(dt=
         is_multi_strategy,
         cur_month_total,
         lst_month_total,
+        subsidy_total_limit,
         sales_ratio
     from 
         temp.temp_mdl_rst_subsidy_strategy
@@ -891,6 +893,7 @@ insert overwrite table dm.dm_mdl_restaurant_eleme_subsidy_strategy partition(dt=
         is_multi_strategy,
         cur_month_total,
         lst_month_total,
+        subsidy_total_limit,
         sales_ratio
     from 
         temp.temp_mdl_rst_subsidy_strategy

@@ -17,7 +17,7 @@ create table temp.temp_mdl_rec_usr_hotfood_rec_userinfo_user_info as
         rec.rec_usr_hotfood_rec_userinfo
     where 
         dt='${day}' and
-        attr_key in ('shop_prefer','base','tag_prefer','cat_prefer','cat_profile')
+        attr_key in ('base','tag_prefer','cat_prefer','cat_profile')
     group by 
         user_id,
         attr_key

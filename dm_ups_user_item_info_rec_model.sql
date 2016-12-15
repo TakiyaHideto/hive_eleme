@@ -237,7 +237,7 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='rec
         'rec' as top_category,
         'shop_favored' as attr_key,
         rst_favored as attr_value,
-        '0' as is_json,
+        '1' as is_json,
         from_unixtime(unix_timestamp()) as update_time
     from 
         temp.temp_mdl_rec_usr_hotfood_rec_userinfo_shop_favored

@@ -132,7 +132,9 @@ create table temp.temp_rec_user_food_score_normalized as
         from 
             temp.temp_rec_user_food_score
         where
-            rno<21
+            rno<21 and 
+            food_name != '' and 
+            food_name is not null 
         ) t
     group by 
         t.user_id

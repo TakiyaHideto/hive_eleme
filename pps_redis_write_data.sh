@@ -1,3 +1,6 @@
+
+. /etc/profile
+
 #***************************************************************************************************
 # ** 文件名称： pps_redis_write_data.sh
 # ** 功能描述： pps服务，向redis写活跃用户数据
@@ -6,8 +9,12 @@
 #***************************************************************************************************
 
 
-input_file='/home/master/workspace/data/mail/active_user_feature_data'
-# input_file='/home/jiahao.dong/active_user_list'
+# input_file='/home/master/workspace/data/mail/active_user_feature_data'
+input_file='/home/dt.rec/rec_ext/project/pps_writedata/active_user_info_list'
+
+okay_file='/home/dt.rec/rec_ext/project/pps_writedata/done.okay'
+
+start_time=`date`
 
 day=`date -d "1 days ago"  +%Y-%m-%d`
 echo $day
@@ -43,17 +50,26 @@ hive -e "
         parse_json_object(profile_json,'base.pre_phone',false) as pre_phone,
         parse_json_object(profile_json,'rec.price_sensitive',false) as price_sensitive,
         parse_json_object(profile_json,'base.source',false) as source,
-        parse_json_object(profile_json,'rec.style_prefer',false) as style_prefer,    
+        parse_json_object(profile_json,'rec.style_prefer',false) as style_prefer  
     from(
-        select
-            distinct user_id
-        from
-            dw.dw_log_app_page_event_hour_inc
-        where
-            dt='${day}' and
-            user_id is not null and
-            user_id != ''
-    ) t1
+        select 
+            user_id
+        from(
+            select
+                user_id, 
+                count(*) as cnt
+            from
+                dw.dw_log_app_pv_day_inc
+            where
+                dt>=get_date('${day}',-5) and
+                user_id is not null
+            group by 
+                user_id
+            sort by 
+                cnt desc
+            ) t
+        limit 200000
+        ) t1
     join(
         select
             user_id,
@@ -62,29 +78,19 @@ hive -e "
             dm.dm_ups_user_info
         where 
             dt='3000-12-31'
-    ) t2
+        ) t2
     on(
         t1.user_id=t2.user_id
     )
 ;" > ${input_file}
 
 
+touch ${okay_file}
+stop_time=`date`
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+echo $start_time >> $okay_file
+echo $stop_time >> $okay_file
+echo "-----------------------" >> $okay_file
 
 
 

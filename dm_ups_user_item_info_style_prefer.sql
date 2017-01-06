@@ -1,4 +1,3 @@
-
 #***************************************************************************************************
 # ** 文件名称： dm_ups_user_item_info_style_prefer.sql
 # ** 功能描述： 生成用户口味风格，并插入到用户画像中
@@ -7,47 +6,47 @@
 #***************************************************************************************************
 
 -- sub task 1: 提取食品正则名称和风格的映射
-DROP TABLE temp.temp_food_tag_classification_style_mapping;
-CREATE TABLE temp.temp_food_tag_classification_style_mapping AS
-    SELECT 
-        t2.food_name, 
-        t1.single_tag as style
-    FROM(
-        SELECT 
-            food_name, 
-            single_tag
-        FROM (
-            SELECT 
-                food_name, 
-                category 
-            FROM 
-                dim.dim_mdl_food_tag_classification
-            WHERE 
-                part='class1_function'
-            ) t
-        LATERAL VIEW EXPLODE(split(category,'#')) tmp AS single_tag
-        WHERE 
-            single_tag is not null and 
-            single_tag!=''
-            ) t1
-    JOIN (
-        SELECT 
-            food_name, 
-            single_tag
-        FROM(
-            SELECT 
-                food_name, 
-                concat_ws('#', category, flavor, method) as food_tag 
-            FROM 
-                dim.dim_mdl_food_tag_classification 
-            WHERE part='class1_3'
-            ) t
-        LATERAL VIEW EXPLODE(split(food_tag,'#')) tmp AS single_tag
-        ) t2
-    ON (
-        t2.single_tag=t1.food_name
-        )
-;
+-- DROP TABLE temp.temp_food_tag_classification_style_mapping;
+-- CREATE TABLE temp.temp_food_tag_classification_style_mapping AS
+--     SELECT 
+--         t2.food_name, 
+--         t1.single_tag as style
+--     FROM(
+--         SELECT 
+--             food_name, 
+--             single_tag
+--         FROM (
+            -- SELECT 
+            --     food_name, 
+            --     category
+            -- FROM 
+            --     dim.dim_mdl_food_tag_classification
+            -- WHERE
+            --     part='class1_function'
+            --     order by category desc limit 6;
+
+--             ) t
+--         LATERAL VIEW EXPLODE(split(category,'#')) tmp AS single_tag
+--         WHERE 
+--             single_tag is not null and 
+--             single_tag!=''
+--             ) t1
+--     JOIN (
+--         SELECT 
+--             food_name, 
+--             single_tag
+--         FROM(
+--             SELECT 
+--                 food_name, 
+--                 concat_ws('#', category, flavor, method) as food_tag 
+--             FROM 
+--                 dim.dim_mdl_food_tag_classification 
+--             WHERE part='class1_3'
+--             ) t
+--         LATERAL VIEW EXPLODE(split(food_tag,'#')) tmp AS single_tag
+--         ) t2
+--     ON (t2.single_tag=t1.food_name)
+-- ;
 
 
 
@@ -68,7 +67,6 @@ create table temp.temp_mdl_user_food_style_day_sub1 as
             user_id,
             order_id,
             entity_id as food_id,
-            food_name,
             total_price,
             created_at
             from(
@@ -99,26 +97,18 @@ create table temp.temp_mdl_user_food_style_day_sub1 as
         ) a
     join(
         select
-            food_id,
-            t1.food_name,
-            t1.normalize_food_name,
-            t2.style
+           food_id,
+           regexp_replace(style,'\"','') as style
         from(
             select
-                food_id,
-                food_name,
-                normalize_food_name
+	            food_id,
+	            tag_function
             from
-                dm.dm_mdl_food_name_normalize_day
+            	dm.dm_mdl_food_name_normalize_day
             where 
-                dt='${day}'
+            	dt='${day}'
             ) t1
-        join
-            temp.temp_food_tag_classification_style_mapping t2
-        on(
-            t1.normalize_food_name=t2.food_name
-            )
-        ) b
+            lateral view explode(split(regexp_replace(tag_function,"\\[|\\]",""),',')) tmp AS style) b
     on(
         a.food_id=b.food_id
         )
@@ -308,6 +298,7 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='rec
         from_unixtime(unix_timestamp()) as update_time
     from 
         temp.temp_ups_user_style_prefer_partition
+		where user_id is not null
 ;
 
 
@@ -320,9 +311,5 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='3000-12-31', flag=
         from_unixtime(unix_timestamp()) as update_time
     from 
         temp.temp_ups_user_style_prefer_partition
+		where user_id is not null
 ;
-
-
-
-
-

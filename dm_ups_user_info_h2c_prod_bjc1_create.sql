@@ -67,11 +67,35 @@ CREATE EXTERNAL TABLE dm_test.dm_ups_user_info_h2c_prod_bjc1
   recent_30_play_time int,
   recent_30_order_cnt int,
   recent_30_order_amt float,
-  delivery_priority int) STORED BY 'org.apache.hadoop.hive.cassandra.cql.CqlStorageHandler'
-WITH SERDEPROPERTIES ("yangdi" = "22222222222","cassandra.host" = "10.0.45.125,10.0.45.155,10.0.45.170","cassandra.port"="9042","cassandra.ks.name" = "rec","cassandra.table.name"="dm_ups_user_info","cassandra.username"="cassandra","cassandra.password"="cassandra") TBLPROPERTIES("cassandra.batchmutate.size"="5","zyy_test"="8888888","cassandra.consistency.level"="QUORUM");
-
-
-
-
-
+  delivery_priority int,
+  is_vip int,
+  phone_city_id int,
+  phone_city_name string,
+  phone_province_id int,
+  phone_province_name string,
+  hongbao_balance double,
+  recent_7_reminder_order_num int,
+  recent_7_reminder_order_rate double,
+  recent_7_withdraw_order_num int,
+  recent_7_withdraw_order_rate double,
+  rest_distance_avg double,
+  order_discount_rate double,
+  order_manjian_rate double,
+  recent_90_click_premium_rest_rate double,
+  recent_90_visit_dish_per_rest_avg int,
+  recent_30_is_new int,
+  order_interval_avg int,
+  order_interval_min int,
+  order_delivery_fee_rate double,
+  click_rest_sale_avg double,
+  click_rest_open_time_avg int,
+  click_rest_safety_level_avg double,
+  click_rest_score_avg double,
+  click_rest_desc_length_avg int,
+  click_rest_delivery_time_avg int,
+  click_rest_has_picture_rate double,
+  click_rest_discount_avg double,
+  bs_user_rest string
+) STORED BY 'org.apache.hadoop.hive.cassandra.cql.CqlStorageHandler'
+WITH SERDEPROPERTIES ("yangdi" = "22222222222","cassandra.host" = "10.0.45.125,10.0.45.155,10.0.45.170","cassandra.port"="9042","cassandra.ks.name" = "rec","cassandra.table.name"="dm_ups_user_info","cassandra.username"="rec2","cassandra.password"="yxpDKmfsjjwred46") TBLPROPERTIES("cassandra.batchmutate.size"="5","zyy_test"="8888888","cassandra.consistency.level"="QUORUM");
 

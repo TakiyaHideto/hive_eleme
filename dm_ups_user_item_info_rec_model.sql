@@ -178,21 +178,21 @@ create table temp.temp_mdl_rec_usr_hotfood_rec_userinfo_shop_order as
 
 
 
--- sub task 5: 生成用户餐厅收藏列表
-drop table temp.temp_mdl_rec_usr_hotfood_rec_userinfo_shop_favored;
-create table temp.temp_mdl_rec_usr_hotfood_rec_userinfo_shop_favored as
-    select
-        user_id,
-        concat('{',
-            concat_ws(',',collect_set(concat('"',restaurant_id,'"',':','"',created_at,'"'))),
-            '}') as rst_favored
-    from
-        dw.dw_com_favored_restaurant
-    where 
-        dt between date_sub('${day}',74) and '${day}'
-    group by
-        user_id
-;
+-- -- sub task 5: 生成用户餐厅收藏列表
+-- drop table temp.temp_mdl_rec_usr_hotfood_rec_userinfo_shop_favored;
+-- create table temp.temp_mdl_rec_usr_hotfood_rec_userinfo_shop_favored as
+--     select
+--         user_id,
+--         concat('{',
+--             concat_ws(',',collect_set(concat('"',restaurant_id,'"',':','"',created_at,'"'))),
+--             '}') as rst_favored
+--     from
+--         dw.dw_com_favored_restaurant
+--     where 
+--         dt between date_sub('${day}',74) and '${day}'
+--     group by
+--         user_id
+-- ;
 
 
 
@@ -230,17 +230,6 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='rec
         from_unixtime(unix_timestamp()) as update_time
     from 
         temp.temp_mdl_rec_usr_hotfood_rec_userinfo_shop_order
-
-    union all
-    select
-        user_id,
-        'rec' as top_category,
-        'shop_favored' as attr_key,
-        rst_favored as attr_value,
-        '1' as is_json,
-        from_unixtime(unix_timestamp()) as update_time
-    from 
-        temp.temp_mdl_rec_usr_hotfood_rec_userinfo_shop_favored
 ;
 
 

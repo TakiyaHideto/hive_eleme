@@ -19,37 +19,78 @@
 -- fields terminated by '\t' 
 -- stored as textfile;
 
+drop table dm.dm_mdl_phone_city_bu_list;
+create table dm.dm_mdl_phone_city_bu_list(
+phone string,
+city_name string,
+bu_flag string
+)
+stored as textfile;
 
 
-drop table dm.dm_mdl_restaurant_eleme_subsidy_strategy;
-CREATE EXTERNAL TABLE `dm.dm_mdl_restaurant_eleme_subsidy_strategy`(
-    restaurant_id bigint,
-    name string,
-    restaurant_tag string,
-    geohash7 string COMMENT 'geo_hash前七位',
-    cat0_name string COMMENT '一级餐厅品类',
-    cat1_name string COMMENT '二级餐厅品类',
-    strategy string COMMENT '满减策略',
-    strategy_code string COMMENT '满减策略编码',
-    strategy_detail string COMMENT '满减细则',
-    lastest_subsidy string COMMENT '最近三次订单补贴情况',
-    is_multi_strategy int COMMENT '是否为多个满减策略',
-    cur_month_total double COMMENT '本月截止当前的销售额',
-    lst_month_total double COMMENT '上一月销售额',
-    subsidy_total_limit double COMMENT '餐厅补贴总金额上限',
-    sales_ratio double COMMENT '本月截止当前的销售额与上月销售额比值'
-    )
-PARTITIONED BY (dt string)
-LOCATION  '/data/external_table/dm/dm_mdl_restaurant_eleme_subsidy_strategy';
+drop table ods.ods_dom_poi_lisztoy_a;
+create table ods.ods_dom_poi_lisztoy_a(
+id string,
+source string,
+meituan_poi_id string,
+baidu_poi_id string,
+dianping_poi_id string
+)
+row format delimited
+fields terminated by '\t' 
+stored as textfile;
 
--- drop table dm.dm_ups_restaurant_info;
--- create table dm.dm_ups_restaurant_info(
--- restaurant_id string,
--- profile_json string
--- ) partitioned by (dt string)
--- row format delimited
--- fields terminated by '\t' 
--- stored as textfile;
+
+drop table temp.temp_dom_poi_lisztoy_a;
+create table temp.temp_dom_poi_lisztoy_a(
+id string,
+source string,
+meituan_poi_id string,
+baidu_poi_id string,
+dianping_poi_id string
+)
+stored as textfile;
+
+drop table temp.temp_dom_poi_lisztoy_b;
+create table temp.temp_dom_poi_lisztoy_b(
+outer_poi_id string,
+type string,
+source string,
+ers_poi_id string
+)
+stored as textfile;
+
+
+
+-- drop table dm.dm_mdl_restaurant_eleme_subsidy_strategy;
+-- CREATE EXTERNAL TABLE `dm.dm_mdl_restaurant_eleme_subsidy_strategy`(
+--     restaurant_id bigint,
+--     name string,
+--     restaurant_tag string,
+--     geohash7 string COMMENT 'geo_hash前七位',
+--     cat0_name string COMMENT '一级餐厅品类',
+--     cat1_name string COMMENT '二级餐厅品类',
+--     strategy string COMMENT '满减策略',
+--     strategy_code string COMMENT '满减策略编码',
+--     strategy_detail string COMMENT '满减细则',
+--     lastest_subsidy string COMMENT '最近三次订单补贴情况',
+--     is_multi_strategy int COMMENT '是否为多个满减策略',
+--     cur_month_total double COMMENT '本月截止当前的销售额',
+--     lst_month_total double COMMENT '上一月销售额',
+--     subsidy_total_limit double COMMENT '餐厅补贴总金额上限',
+--     sales_ratio double COMMENT '本月截止当前的销售额与上月销售额比值'
+--     )
+-- PARTITIONED BY (dt string)
+-- LOCATION  '/data/external_table/dm/dm_mdl_restaurant_eleme_subsidy_strategy';
+
+drop table dm.dm_ups_restaurant_info;
+create table dm.dm_ups_restaurant_info(
+restaurant_id string,
+profile_json string
+) partitioned by (dt string)
+row format delimited
+fields terminated by '\t' 
+stored as textfile;
 
 
 

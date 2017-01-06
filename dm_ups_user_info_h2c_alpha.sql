@@ -66,6 +66,42 @@ parse_json_object(profile_json,'trd.recent_30_active_day') as recent_30_active_d
 parse_json_object(profile_json,'trd.recent_30_play_time') as recent_30_play_time,
 parse_json_object(profile_json,'trd.recent_30_order_cnt') as recent_30_order_cnt,
 parse_json_object(profile_json,'trd.recent_30_order_amt') as recent_30_order_amt,
-parse_json_object(profile_json,'speciality.delivery_priority') as delivery_priority
-from dm.dm_ups_user_info_inc where dt='3000-12-31';
+parse_json_object(profile_json,'speciality.delivery_priority') as delivery_priority,
+
+parse_json_object(profile_json,'base.is_vip') as is_vip,
+parse_json_object(profile_json,'trd.phone_city_id') as phone_city_id,
+parse_json_object(profile_json,'trd.phone_city_name') as phone_city_name,
+parse_json_object(profile_json,'trd.phone_province_id') as phone_province_id,
+parse_json_object(profile_json,'trd.phone_province_name') as phone_province_name,
+parse_json_object(profile_json,'trd.hongbao_balance') as hongbao_balance,
+parse_json_object(profile_json,'trd.recent_7_reminder_order_num') as recent_7_reminder_order_num,
+parse_json_object(profile_json,'trd.recent_7_reminder_order_rate') as recent_7_reminder_order_rate,
+parse_json_object(profile_json,'trd.recent_7_withdraw_order_num') as recent_7_withdraw_order_num,
+parse_json_object(profile_json,'trd.recent_7_withdraw_order_rate') as recent_7_withdraw_order_rate,
+parse_json_object(profile_json,'trd.rest_distance_avg') as rest_distance_avg,
+parse_json_object(profile_json,'trd.order_discount_rate') as order_discount_rate,
+parse_json_object(profile_json,'trd.order_manjian_rate') as order_manjian_rate,
+parse_json_object(profile_json,'trd.recent_90_click_premium_rest_rate') as recent_90_click_premium_rest_rate,
+parse_json_object(profile_json,'trd.recent_90_visit_dish_per_rest_avg') as recent_90_visit_dish_per_rest_avg,
+parse_json_object(profile_json,'trd.recent_30_is_new') as recent_30_is_new,
+parse_json_object(profile_json,'trd.order_interval_avg') as order_interval_avg,
+parse_json_object(profile_json,'trd.order_interval_min') as order_interval_min,
+parse_json_object(profile_json,'trd.order_delivery_fee_rate') as order_delivery_fee_rate,
+parse_json_object(profile_json,'trd.click_rest_sale_avg') as click_rest_sale_avg,
+parse_json_object(profile_json,'trd.click_rest_open_time_avg') as click_rest_open_time_avg,
+parse_json_object(profile_json,'trd.click_rest_safety_level_avg') as click_rest_safety_level_avg,
+parse_json_object(profile_json,'trd.click_rest_score_avg') as click_rest_score_avg,
+parse_json_object(profile_json,'trd.click_rest_desc_length_avg') as click_rest_desc_length_avg,
+parse_json_object(profile_json,'trd.click_rest_delivery_time_avg') as click_rest_delivery_time_avg,
+parse_json_object(profile_json,'trd.click_rest_has_picture_rate') as click_rest_has_picture_rate,
+parse_json_object(profile_json,'trd.click_rest_discount_avg') as click_rest_discount_avg,
+
+parse_json_object(profile_json,'rec.bs_user_rest') as bs_user_rest
+
+
+
+from dm.dm_ups_user_info_inc 
+where dt='3000-12-31'
+limit 10000
+;
 

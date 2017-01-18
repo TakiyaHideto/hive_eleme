@@ -4,7 +4,7 @@
 # **  文件名称： dm_ups_restaurant_item_info_comment.sql
 # **  功能描述：
 #         1. 得到餐厅的星级评价信息
-#		  2. 得到餐厅的印象评价标签
+#         2. 得到餐厅的印象评价标签
 #
 # **  创建者：jiahao.dong@ele.me
 # **  创建日期： 2016-10-19
@@ -28,41 +28,63 @@ group by id;
 
 -- sub task 2: 获取用户印象评价标签
 
-
--- sub task 3: 汇总各维度用户评价信息
-drop table temp.temp_ups_restaurant_comment_info;
-create table temp.temp_ups_restaurant_comment_info as 
-select restaurant_id, 
-    'comment' as top_category,
-    'rank_star' as attr_key,
-    concat('{',
-        concat_ws(',',
-            concat('"star_rating_5_cnt":', '"', star_rating_5_cnt, '"'),
-            concat('"star_rating_4_cnt":', '"', star_rating_4_cnt, '"'),
-            concat('"star_rating_3_cnt":', '"', star_rating_3_cnt, '"'),
-            concat('"star_rating_2_cnt":', '"', star_rating_2_cnt, '"'),
-            concat('"star_rating_1_cnt":', '"', star_rating_1_cnt, '"')
-        ),
-        '}'
-    ) as comment_info
-from temp.temp_ups_restaurant_ranking_star;
-
-
 -- sub task 4: import data to ups 
-insert overwrite table dm.dm_ups_restaurant_item_info PARTITION(dt='${day}', flag='comment')
-select restaurant_id,
-    top_category,
-    attr_key, 
-    comment_info as attr_value,
-    '1' as is_json,
-    '${day}' as update_time
-from temp.temp_ups_restaurant_comment_info;
+INSERT OVERWRITE TABLE dm.dm_ups_restaurant_item_info PARTITION(dt = '${day}', flag = 'comment')
+SELECT
+    a.restaurant_id,
+    'base' AS top_category,
+    SPLIT(item, '=')[0] AS attr_key,
+    SPLIT(item, '=')[1] AS attr_value,
+    0 AS is_json,
+    '${day}' AS update_time
+FROM
+(
+    SELECT
+        restaurant_id AS restaurant_id,
+        ARRAY(
+          CONCAT('star_rating_5_cnt=', star_rating_5_cnt),
+          CONCAT('star_rating_4_cnt=', star_rating_4_cnt),
+          CONCAT('star_rating_3_cnt=', star_rating_3_cnt),
+          CONCAT('star_rating_2_cnt=', star_rating_2_cnt),
+          CONCAT('star_rating_1_cnt=', star_rating_1_cnt)
+        ) AS info_array
+    FROM
+        temp.temp_ups_restaurant_ranking_star
 
-insert overwrite table dm.dm_ups_restaurant_item_info PARTITION(dt='3000-12-31', flag='comment')
-select restaurant_id,
-    top_category,
-    attr_key, 
-    comment_info as attr_value,
-    '1' as is_json,
-    '${day}' as update_time
-from temp.temp_ups_restaurant_comment_info;
+    UNION ALL
+    SELECT
+        restaurant_id AS restaurant_id,
+        ARRAY(
+          CONCAT('rating_score_avg=', like_score),
+          CONCAT('recent_30_negtive_comment_cnt=', bad_rating_num),
+          CONCAT('recent_30_negtive_comment_scale=', bad_rating_rate),
+          CONCAT('comment_cnt=', comment_num)
+          ) AS info_array
+    FROM
+        st.st_bs_shop_portrait
+    WHERE
+        dt = '${day}'
+) a
+LATERAL VIEW
+EXPLODE(a.info_array) mytable AS item
+WHERE
+    SPLIT(item, '=')[1] != '0' AND LENGTH(SPLIT(item, '=')[1]) > 0;
+
+
+
+
+##### sub task
+##### copy newest data to dt = '3000-12-31'
+
+SET hive.exec.dynamic.partition = true;
+SET hive.exec.dynamic.partition.mode = nonstrict;
+
+INSERT OVERWRITE TABLE dm.dm_ups_restaurant_item_info PARTITION(dt = '3000-12-31', flag = 'comment')
+SELECT
+    restaurant_id, top_category, attr_key, attr_value, is_json, update_time
+FROM
+    dm.dm_ups_restaurant_item_info
+WHERE
+    dt = '${day}' AND flag = 'comment' AND attr_value != '0';
+
+

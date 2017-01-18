@@ -324,29 +324,28 @@ select t.restaurant_id, 'trade' as top_category, split(item,'=')[0] as attr_key,
 from(
     select restaurant_id,
         array(
-            concat('recent_30_order_cnt=', recent_30_order_cnt),
-            concat('recent_30_user_cnt=', recent_30_user_cnt),
-            concat('recent_30_ord_usr_ratio=', round(recent_30_ord_usr_ratio,3)),
-            concat('recent_30_returned_customer_scale=', round(recent_30_returned_customer_scale,3)),
-            concat('recent_30_order_amt=', recent_30_order_cnt),
-            concat('recent_30_order_price_median=', round(recent_30_order_price_median,3)),
-            concat('recent_30_order_price_stddev=', round(recent_30_order_price_stddev,3)),
-            concat('recent_30_payment_amt=', recent_30_payment_amt),
-            concat('recent_30_payment_median=', round(recent_30_payment_median,3)),
-            concat('recent_30_payment_stddev=', round(recent_30_payment_stddev,3)),
-            concat('recent_30_eleme_subsidy_amt=', recent_30_eleme_subsidy_amt),
-            concat('recent_30_eleme_subsidy_median=', round(recent_30_eleme_subsidy_median,3)),
-            concat('recent_30_payment_stddev=', round(recent_30_payment_stddev,3)),
-            concat('recent_30_eleme_subsidy_amt=', recent_30_eleme_subsidy_amt),
-            concat('recent_30_eleme_subsidy_median=', round(recent_30_eleme_subsidy_median,3)),
-            concat('recent_30_eleme_subsidy_stddev=', round(recent_30_eleme_subsidy_stddev,3)),
-            concat('recent_30_order_chargeback_scale=', round(recent_30_order_chargeback_scale,3)),
-            concat('recent_30_order_unpaid_cnt=', recent_30_order_unpaid_cnt),
-            concat('recent_30_order_unpaid_scale=', round(recent_30_order_unpaid_scale,3)),
-            concat('recent_30_order_hongbao_preferential_avg=', round(recent_30_order_hongbao_preferential_avg,3)),
-            concat('recent_30_order_hongbao_preferential_stddev=', round(recent_30_order_hongbao_preferential_stddev,3))
+            concat('recent_30_order_cnt=', max(recent_30_order_cnt)),
+            concat('recent_30_user_cnt=', max(recent_30_user_cnt)),
+            concat('recent_30_ord_usr_ratio=', max(round(recent_30_ord_usr_ratio,3))),
+            concat('recent_30_returned_customer_scale=', max(round(recent_30_returned_customer_scale,3))),
+            concat('recent_30_order_amt=', max(recent_30_order_cnt)),
+            concat('recent_30_order_price_median=', max(round(recent_30_order_price_median,3))),
+            concat('recent_30_order_price_stddev=', max(round(recent_30_order_price_stddev,3))),
+            concat('recent_30_payment_amt=', max(recent_30_payment_amt)),
+            concat('recent_30_payment_median=', max(round(recent_30_payment_median,3))),
+            concat('recent_30_payment_stddev=', max(round(recent_30_payment_stddev,3))),
+            concat('recent_30_eleme_subsidy_amt=', max(recent_30_eleme_subsidy_amt)),
+            concat('recent_30_eleme_subsidy_median=', max(round(recent_30_eleme_subsidy_median,3))),
+            concat('recent_30_eleme_subsidy_stddev=', max(round(recent_30_eleme_subsidy_stddev,3))),
+            concat('recent_30_order_chargeback_scale=', max(round(recent_30_order_chargeback_scale,3))),
+            concat('recent_30_order_unpaid_cnt=', max(recent_30_order_unpaid_cnt)),
+            concat('recent_30_order_unpaid_scale=', max(round(recent_30_order_unpaid_scale,3))),
+            concat('recent_30_order_hongbao_preferential_avg=', max(round(recent_30_order_hongbao_preferential_avg,3))),
+            concat('recent_30_order_hongbao_preferential_stddev=', max(round(recent_30_order_hongbao_preferential_stddev,3)))
         ) as info_array
     from temp.temp_mdl_restaurant_recent_30_trade
+    group by 
+        restaurant_id
 ) t
 lateral view explode(t.info_array) tmp as item
 where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
@@ -484,19 +483,50 @@ lateral view explode(t.info_array) tmp as item
 where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
 
 union all
-select t.restaurant_id, 'trade' as top_category, split(item,'=')[0] as attr_key, 
+select 
+    t.restaurant_id, 
+    'trade' as top_category, 
+    split(item,'=')[0] as attr_key, 
     split(item,'=')[1] as attr_value, 
     1 as is_json, 
     '${day}' as update_time
 from(
-    select restaurant_id,
+    select 
+        restaurant_id,
         array(
             concat('food_top_10=',food_top_10)
         ) as info_array
-    from temp.temp_mdl_restaurant_long_term_trade_rank
+    from 
+        temp.temp_mdl_restaurant_long_term_trade_rank
 ) t
 lateral view explode(t.info_array) tmp as item
-where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0; 
+where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
+
+union all
+select 
+    t.restaurant_id, 
+    'trade' as top_category, 
+    split(item,'=')[0] as attr_key, 
+    split(item,'=')[1] as attr_value, 
+    0 as is_json, 
+    '${day}' as update_time
+from(
+    select 
+        restaurant_id,
+        array(
+            concat('recent_30_rest_subsidy_median=',round(res_avg_discount_count,3)),
+            concat('recent_30_top_3_food_sales_scale=',round(top_order_pct,3)),
+            concat('recent_14_order_cnt=',order_day_count_14day),
+            concat('user_platform_order_cnt=',round(res_user_avgorders,3))
+        ) as info_array
+    from 
+        st.st_bs_shop_portrait
+    where
+        dt='${day}'
+) t
+lateral view explode(t.info_array) tmp as item
+where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
+; 
 
 
 

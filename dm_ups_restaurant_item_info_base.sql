@@ -52,6 +52,30 @@ FROM
         ---- 类型100是测试餐厅，1是正常的
         ---- dt = '${day}' AND is_valid = 1 AND type != 100
         dt = '${day}' AND type != 100
+
+    UNION ALL
+    SELECT
+        restaurant_id AS restaurant_id,
+        ARRAY(
+          CONCAT('food_price_avg=', res_dish_avg_price),
+          CONCAT('security_level=', res_level),
+          CONCAT('is_premium=', is_premium),
+          CONCAT('is_online_payment=', is_payment),
+          CONCAT('is_hummer=', is_hummer),
+          CONCAT('is_picture=', is_picture),
+          CONCAT('food_has_picture_scale=', ROUND(dish_picture_pct,3)),
+          CONCAT('food_has_picture_cnt=', res_picture_pct),
+          CONCAT('is_certification=', is_certification),
+          CONCAT('is_new=', is_new_restaurant),
+          CONCAT('is_royalty=', is_royalty),
+          CONCAT('is_gka=', is_gka),
+          CONCAT('is_controlled_by_eleme=', is_controlled_by_eleme),
+          CONCAT('is_rescued=', is_rescued)
+          ) AS info_array
+    FROM
+        st.st_bs_shop_portrait
+    WHERE
+        dt = '${day}'
 ) a
 LATERAL VIEW
 EXPLODE(a.info_array) mytable AS item
@@ -72,4 +96,3 @@ FROM
     dm.dm_ups_restaurant_item_info
 WHERE
     dt = '${day}' AND flag = 'base' AND attr_value != '0';
-

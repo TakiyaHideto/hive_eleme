@@ -12,15 +12,16 @@
 
 drop table temp.temp_restaurant_rank_info_from_category_info;
 create table temp.temp_restaurant_rank_info_from_category_info as
-select t.restaurant_id, 'category' as top_category, split(item,'=')[0] as attr_key, split(item,'=')[1] as attr_value, 0 as is_json, '${day}' as update_time
+select t.restaurant_id, 'category' as top_category, split(item,'=')[0] as attr_key, split(item,'=')[1] as attr_value, 1 as is_json, '${day}' as update_time
 from(
     select restaurant_id,
         array(
-          concat('cat0_name=',cat0_name),
-          concat('cat1_name=',cat1_name)
+          concat('cat0_name=',concat('[',concat_ws(',',collect_set(concat('"',cat0_name,'"'))),']')),
+          concat('cat1_name=',concat('[',concat_ws(',',collect_set(concat('"',cat1_name,'"'))),']'))
           ) as info_array
     from rec.rec_prf_restaurant_category_info
     where dt='${day}'
+    group by restaurant_id
 ) t
 lateral view explode(t.info_array) tmp as item
 where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0;

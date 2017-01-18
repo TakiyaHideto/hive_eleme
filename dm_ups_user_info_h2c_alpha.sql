@@ -69,10 +69,10 @@ parse_json_object(profile_json,'trd.recent_30_order_amt') as recent_30_order_amt
 parse_json_object(profile_json,'speciality.delivery_priority') as delivery_priority,
 
 parse_json_object(profile_json,'base.is_vip') as is_vip,
-parse_json_object(profile_json,'trd.phone_city_id') as phone_city_id,
-parse_json_object(profile_json,'trd.phone_city_name') as phone_city_name,
-parse_json_object(profile_json,'trd.phone_province_id') as phone_province_id,
-parse_json_object(profile_json,'trd.phone_province_name') as phone_province_name,
+parse_json_object(profile_json,'base.phone_city_id') as phone_city_id,
+parse_json_object(profile_json,'base.phone_city_name') as phone_city_name,
+parse_json_object(profile_json,'base.phone_province_id') as phone_province_id,
+parse_json_object(profile_json,'base.phone_province_name') as phone_province_name,
 parse_json_object(profile_json,'trd.hongbao_balance') as hongbao_balance,
 parse_json_object(profile_json,'trd.recent_7_reminder_order_num') as recent_7_reminder_order_num,
 parse_json_object(profile_json,'trd.recent_7_reminder_order_rate') as recent_7_reminder_order_rate,
@@ -96,8 +96,11 @@ parse_json_object(profile_json,'trd.click_rest_delivery_time_avg') as click_rest
 parse_json_object(profile_json,'trd.click_rest_has_picture_rate') as click_rest_has_picture_rate,
 parse_json_object(profile_json,'trd.click_rest_discount_avg') as click_rest_discount_avg,
 
-parse_json_object(profile_json,'rec.bs_user_rest') as bs_user_rest
+parse_json_object(profile_json,'rec.bs_user_rest') as bs_user_rest,
 
+parse_json_object(profile_json,'rec.rest_order_cat0_prefer') as rest_order_cat0_prefer,
+parse_json_object(profile_json,'rec.rest_order_cat1_prefer') as rest_order_cat1_prefer,
+parse_json_object(profile_json,'rec.rest_behavior') as rest_behavior
 
 
 from dm.dm_ups_user_info_inc 

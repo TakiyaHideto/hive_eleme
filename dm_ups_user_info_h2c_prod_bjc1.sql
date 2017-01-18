@@ -97,7 +97,11 @@ parse_json_object(profile_json,'trd.click_rest_delivery_time_avg',false) as clic
 parse_json_object(profile_json,'trd.click_rest_has_picture_rate',false) as click_rest_has_picture_rate,
 parse_json_object(profile_json,'trd.click_rest_discount_avg',false) as click_rest_discount_avg,
 
-parse_json_object(profile_json,'rec.bs_user_rest',false) as bs_user_rest
+parse_json_object(profile_json,'rec.bs_user_rest',false) as bs_user_rest,
+
+parse_json_object(profile_json,'rec.rest_order_cat0_prefer') as rest_order_cat0_prefer,
+parse_json_object(profile_json,'rec.rest_order_cat1_prefer') as rest_order_cat1_prefer,
+parse_json_object(profile_json,'rec.rest_behavior') as rest_behavior
 from dm.dm_ups_user_info_inc 
 where dt='3000-12-31' and 
 batch_id=0;

@@ -285,57 +285,35 @@ create table temp.temp_mdl_user_hongbao_thres_order_payment_gap as
 ;
 
 
-
-
-
-
 -- sub task 3: import data into ups
 insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='rec_fea_jiahao')
-    select 
-            t.user_id, 
-            'rec' as top_category, 
-            split(item,'=')[0] as attr_key, 
-            split(item,'=')[1] as attr_value, 
-            '0' as is_json, 
-            '${day}' as update_time
-        from(
-            select 
-                user_id,
-                array(
-                    concat('cat0_score=', max(round(cat0_score,2)))
-                ) as info_array
-            from 
-                temp.temp_mdl_user_restaurant_category_0_preference
-            group by 
-                user_id
-        ) t
-        lateral view explode(t.info_array) tmp as item
-        where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
+    select
+        user_id,
+        'rec' as top_category,
+        'rest_order_cat0_prefer' as attr_key,
+        concat('{', concat_ws(',', collect_set(concat('"',cat0_name, '":', '"', round(cat0_score,2), '"'))), '}') as attr_value,
+        '1' as is_json,
+        '${day}' as update_time
+    from 
+        temp.temp_mdl_user_restaurant_category_0_preference
+    group by 
+        user_id
     
     union all
-        select 
-            t.user_id, 
-            'rec' as top_category, 
-            split(item,'=')[0] as attr_key, 
-            split(item,'=')[1] as attr_value, 
-            '0' as is_json, 
-            '${day}' as update_time
-        from(
-            select 
-                user_id,
-                array(
-                    concat('cat1_score=', max(round(cat1_score,2)))
-                ) as info_array
-            from 
-                temp.temp_mdl_user_restaurant_category_1_preference
-            group by 
-                user_id
-        ) t
-        lateral view explode(t.info_array) tmp as item
-        where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
+        select
+        user_id,
+        'rec' as top_category,
+        'rest_order_cat1_prefer' as attr_key,
+        concat('{', concat_ws(',', collect_set(concat('"',cat1_name, '":', '"', round(cat1_score,2), '"'))), '}') as attr_value,
+        '1' as is_json,
+        '${day}' as update_time
+    from 
+        temp.temp_mdl_user_restaurant_category_1_preference
+    group by 
+        user_id
 
     union all
-    	select 
+        select 
             t.user_id, 
             'rec' as top_category, 
             split(item,'=')[0] as attr_key, 
@@ -358,7 +336,7 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='rec
         where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
 
     union all
-    	select 
+        select 
             t.user_id, 
             'rec' as top_category, 
             split(item,'=')[0] as attr_key, 
@@ -397,4 +375,3 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='3000-12-31', flag=
         dt='${day}' and 
         flag='rec_fea_jiahao'
 ;
-

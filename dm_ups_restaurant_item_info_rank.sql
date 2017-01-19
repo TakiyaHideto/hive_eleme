@@ -221,9 +221,10 @@ SELECT
     0 AS is_json,
     '${day}' AS update_time
 FROM(
-    restaurant_id,
+    select
+        restaurant_id,
         array(
-            concat('rest_delivertime_avg=',res_avg_delivertime ),
+            concat('rest_delivertime_avg=',res_avg_delivertime),
             concat('recent_30_is_rest_discount=',res_self_coupon),
             concat('recent_14_favor_cnt=',collection_num),
             concat('recent_14_favor_avg=',round(avg_collection_num,3)),
@@ -248,7 +249,8 @@ select
     1 AS is_json,
     '${day}' AS update_time
 from(
-    restaurant_id,
+    select
+        restaurant_id,
         array(
             concat('rest_cost_distribution=',res_range_of_cost),
             concat('rest_food_cate_distribution=',res_newflavor_rate)

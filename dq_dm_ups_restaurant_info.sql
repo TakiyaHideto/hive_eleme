@@ -11,8 +11,8 @@
 
 INSERT OVERWRITE TABLE dq.dq_table PARTITION(dt = '${day}', p_dq_table = 'dm_ups_restaurant_item_info', p_id = 1)
 SELECT
-    a.restaurant AS id,
-    'dm_ups_user_item_info' AS dq_table,
+    a.restaurant_id AS id,
+    'dm_ups_restaurant_item_info' AS dq_table,
     '${day}' AS date_at,
     'jiahao.dong' AS dq_man,
     'multi-restauranr_id:top_category:attr_key' AS dq_type,
@@ -24,13 +24,13 @@ SELECT
 FROM
 (
     SELECT
-        restaurant, top_category, attr_key, COUNT(*) AS number
+        restaurant_id, top_category, attr_key, COUNT(*) AS number
     FROM
         dm.dm_ups_restaurant_item_info
     WHERE
         dt = '3000-12-31'
     GROUP BY
-        restaurant, top_category, attr_key
+        restaurant_id, top_category, attr_key
 ) a
 WHERE
     a.number > 1

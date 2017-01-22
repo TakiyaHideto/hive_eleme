@@ -9,9 +9,16 @@
 #***************************************************************************************************
 
 
-
+cd /home/dev/pps_kit
 
 source_dir='/home/dt.rec/rec_ext/project/pps_writedata/transfer_cache/'
+dt=`date +%Y%m%d --date='1 days ago'`
+dt_3day=`date +%Y%m%d --date='3 days ago'`
+
+cp /data/redis_backup/active_user_info_list.cache /data/redis_backup/active_user_info_list.cache.${dt}
+rm /data/redis_backup/active_user_info_list.cache
+rm user_cache_meta_file
+rm /data/redis_backup/active_user_info_list.cache.${dt_3day}
 
 /usr/local/bin/expect <<!
 set timeout 30
@@ -41,3 +48,4 @@ rm active_user_info_list.cache.part*
 done
 
 rm active_user_info_list.cache.part*
+touch /data/redis_backup/cache_data_success.flag

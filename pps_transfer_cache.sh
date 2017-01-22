@@ -12,6 +12,7 @@ cd /home/dt.rec/rec_ext/project/pps_writedata/transfer_cache
 
 day=`date -d "1 days ago"  +%Y-%m-%d`
 dt=`date +%Y%m%d --date='1 days ago'`
+dt_3day=`date +%Y%m%d --date='3 days ago'`
 
 data_dir='/home/dt.rec/rec_ext/project/pps_writedata/transfer_cache/'
 local_cache_raw_file='active_user_info_list_local'

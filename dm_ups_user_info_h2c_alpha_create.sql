@@ -99,7 +99,9 @@ CREATE EXTERNAL TABLE dm_test.dm_ups_user_info_h2c_alpha
   bs_user_rest string,
   rest_order_cat0_prefer string,
   rest_order_cat1_prefer string,
-  rest_behavior string
+  rest_behavior string,
+  cat_profile string,
+  rest_prefer string
 ) STORED BY 'org.apache.hadoop.hive.cassandra.cql.CqlStorageHandler'
 WITH SERDEPROPERTIES ("yangdi" = "22222222222","cassandra.host" = "192.168.115.180,192.168.115.169","cassandra.port"="9042","cassandra.ks.name" = "rec","cassandra.table.name"="dm_ups_user_info","cassandra.username"="cassandra","cassandra.password"="cassandra") TBLPROPERTIES("cassandra.batchmutate.size"="5","zyy_test"="8888888","cassandra.consistency.level"="QUORUM");
 

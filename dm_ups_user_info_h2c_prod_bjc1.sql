@@ -101,7 +101,9 @@ parse_json_object(profile_json,'rec.bs_user_rest',false) as bs_user_rest,
 
 parse_json_object(profile_json,'rec.rest_order_cat0_prefer') as rest_order_cat0_prefer,
 parse_json_object(profile_json,'rec.rest_order_cat1_prefer') as rest_order_cat1_prefer,
-parse_json_object(profile_json,'rec.rest_behavior') as rest_behavior
+parse_json_object(profile_json,'rec.rest_behavior') as rest_behavior,
+parse_json_object(profile_json,'rec.cat_profile') as cat_profile,
+parse_json_object(profile_json,'rec.rest_prefer') as rest_prefer
 from dm.dm_ups_user_info_inc 
 where dt='3000-12-31' and 
 batch_id=0;

@@ -230,6 +230,20 @@ insert overwrite table dm.dm_ups_user_item_info partition(dt='${day}', flag='rec
         from_unixtime(unix_timestamp()) as update_time
     from 
         temp.temp_mdl_rec_usr_hotfood_rec_userinfo_shop_order
+
+    union all
+    select
+        user_id,
+        'rec' as top_category,
+        'rest_prefer' as attr_key,
+        attr_value,
+        '1' as is_json,
+        from_unixtime(unix_timestamp()) as update_time
+    from
+        rec.rec_hotfood_user_info
+    where  
+        dt='${day}' and
+        model='shop_prefer'
 ;
 
 

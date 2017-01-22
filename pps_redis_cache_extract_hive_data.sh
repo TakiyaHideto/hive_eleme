@@ -21,7 +21,9 @@ start_time=`date`
 
 day=`date -d "1 days ago"  +%Y-%m-%d`
 dt=`date +%Y%m%d --date='1 days ago'`
+dt_3day=`date +%Y%m%d --date='3 days ago'`
 cp active_user_info_list ./backup/active_user_info_list_${dt}
+rm ./backup/active_user_info_list_${dt_3day}
 
 echo $day
 
@@ -114,9 +116,11 @@ hive -e "
         parse_json_object(profile_json,'trd.click_rest_delivery_time_avg') as click_rest_delivery_time_avg,
         parse_json_object(profile_json,'trd.click_rest_has_picture_rate') as click_rest_has_picture_rate,
         parse_json_object(profile_json,'trd.click_rest_discount_avg') as click_rest_discount_avg,
-        parse_json_object(profile_json,'rec.rest_order_cat0_prefer') as click_rest_discount_avg,
-        parse_json_object(profile_json,'rec.rest_order_cat1_prefer') as click_rest_discount_avg,
-        parse_json_object(profile_json,'rec.rest_behavior') as click_rest_discount_avg
+        parse_json_object(profile_json,'rec.rest_order_cat0_prefer') as rest_order_cat0_prefer,
+        parse_json_object(profile_json,'rec.rest_order_cat1_prefer') as rest_order_cat1_prefer,
+        parse_json_object(profile_json,'rec.rest_behavior') as rest_behavior,
+        parse_json_object(profile_json,'rec.cat_profile') as cat_profile,
+        parse_json_object(profile_json,'rec.rest_prefer') as rest_prefer
     from(
         select
             user_id
@@ -134,7 +138,7 @@ hive -e "
             sort by
                 cnt desc
             ) t
-        limit 5000000
+        limit 6000000
         ) t1
     join(
         select
@@ -154,7 +158,7 @@ echo `date`": finish extracting data" >> $okay_file
 
 rm ${split_file_name}_*
 rm ${user_file_meta_list}
-cat ${input_file} | head -5000000 | split ${input_file} -l 100000 ${split_file_name}_
+cat ${input_file} | head -6000000 | split ${input_file} -l 100000 ${split_file_name}_
 echo `date`": finish splitting file" >> $okay_file
 
 # tar -zcvf ${input_file_gz} ${split_file_name}_*

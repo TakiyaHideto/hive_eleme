@@ -81,8 +81,9 @@ CREATE EXTERNAL TABLE dm_test.dm_ups_restaurant_info_h2c_prod_bjc1
   order_time_prefer string,
   order_date_prefer string,
   order_month_distribution string,
-  food_top_10 string) STORED BY 'org.apache.hadoop.hive.cassandra.cql.CqlStorageHandler'
-WITH SERDEPROPERTIES ("yangdi" = "22222222222","cassandra.host" = "10.0.45.125,10.0.45.155,10.0.45.170","cassandra.port"="9042","cassandra.ks.name" = "rec","cassandra.table.name"="dm_ups_restaurant_info","cassandra.username"="cassandra","cassandra.password"="cassandra") TBLPROPERTIES("cassandra.batchmutate.size"="5","zyy_test"="8888888","cassandra.consistency.level"="QUORUM");
+  food_top_10 string
+  ) STORED BY 'org.apache.hadoop.hive.cassandra.cql.CqlStorageHandler'
+WITH SERDEPROPERTIES ("yangdi" = "22222222222","cassandra.host" = "10.0.45.125,10.0.45.155,10.0.45.170","cassandra.port"="9042","cassandra.ks.name" = "rec","cassandra.table.name"="dm_ups_restaurant_info","cassandra.username"="rec2","cassandra.password"="yxpDKmfsjjwred46") TBLPROPERTIES("cassandra.batchmutate.size"="5","zyy_test"="8888888","cassandra.consistency.level"="QUORUM");
 
 
 

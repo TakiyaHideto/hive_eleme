@@ -246,14 +246,14 @@ select
     'rank' AS top_category,
     SPLIT(item, '=')[0] AS attr_key,
     SPLIT(item, '=')[1] AS attr_value,
-    1 AS is_json,
+    0 AS is_json,
     '${day}' AS update_time
 from(
     select
         restaurant_id,
         array(
-            concat('rest_cost_distribution=',res_range_of_cost),
-            concat('rest_food_cate_distribution=',res_newflavor_rate)
+            concat('rest_cost_distribution=',concat('"', res_range_of_cost, '"')),
+            concat('rest_food_cate_distribution=',concat('"', res_newflavor_rate, '"'))
         ) as info_array
     from 
         st.st_bs_shop_portrait
@@ -277,4 +277,4 @@ SELECT
 FROM
     dm.dm_ups_restaurant_item_info
 WHERE
-    dt = '${day}' AND flag IN ('rank_open', 'rank_complaint', 'rank_remind', 'rank_refuse_order');
+    dt = '${day}' AND flag IN ('rank_open', 'rank_complaint', 'rank_remind', 'rank_refuse_order', 'rank_001');

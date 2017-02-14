@@ -32,7 +32,7 @@ group by id;
 INSERT OVERWRITE TABLE dm.dm_ups_restaurant_item_info PARTITION(dt = '${day}', flag = 'comment')
 SELECT
     a.restaurant_id,
-    'base' AS top_category,
+    'comment' AS top_category,
     SPLIT(item, '=')[0] AS attr_key,
     SPLIT(item, '=')[1] AS attr_value,
     0 AS is_json,

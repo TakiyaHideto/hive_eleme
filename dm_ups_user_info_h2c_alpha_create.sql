@@ -111,3 +111,4 @@ WITH SERDEPROPERTIES ("yangdi" = "22222222222","cassandra.host" = "192.168.115.1
 
 
 
+

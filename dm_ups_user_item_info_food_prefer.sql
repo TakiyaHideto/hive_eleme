@@ -29,7 +29,7 @@ create table temp.temp_mdl_food_user_food_sample_sub1 as
                     total as total_price,
                     created_at
                 from
-                    dw.dw_trd_order_wide
+                    dw.dw_trd_order_wide_day
                 where 
                     dt='${day}' and 
                     datediff('${day}',created_at)<61 and

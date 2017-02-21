@@ -172,66 +172,78 @@ insert overwrite table dm.dm_ups_food_item_info partition(dt='${day}', flag='tag
         food_id, 
         'tag' as top_category, 
         'cat_1' as attr_key, 
-        category as attr_value, 
-        '0' as is_json, 
+        concat('[',concat_ws(',' ,collect_set(concat('"', category, '"'))),']') as attr_value, 
+        '1' as is_json, 
         '${day}' as update_time
     from 
         temp.temp_ups_food_tag_info_category_fine
+    group by 
+        food_id
     
     union all
     select 
         food_id, 
         'tag' as top_category, 
         'cat_2' as attr_key, 
-        category as attr_value, 
-        '0' as is_json, 
+        concat('[',concat_ws(',' ,collect_set(concat('"', category, '"'))),']') as attr_value, 
+        '1' as is_json, 
         '${day}' as update_time
     from 
         temp.temp_ups_food_tag_info_category_coarse
+    group by 
+        food_id
 
     union all
     select 
         food_id, 
         'tag' as top_category, 
         'flavor' as attr_key, 
-        flavor as attr_value, 
-        '0' as is_json, 
+        concat('[',concat_ws(',' ,collect_set(concat('"', flavor, '"'))),']') as attr_value, 
+        '1' as is_json, 
         '${day}' as update_time
     from 
         temp.temp_ups_food_tag_info_flavor
+    group by 
+        food_id
 
     union all
     select 
         food_id, 
         'tag' as top_category, 
         'cooking_method' as attr_key, 
-        method as attr_value, 
-        '0' as is_json, 
+        concat('[',concat_ws(',' ,collect_set(concat('"', method, '"'))),']') as attr_value,  
+        '1' as is_json, 
         '${day}' as update_time
     from 
         temp.temp_ups_food_tag_info_cooking_method
+    group by 
+        food_id
     
     union all 
     select 
         food_id, 
         'tag' as top_category, 
         'tag_function' as attr_key, 
-        tag_function as attr_value, 
+        concat('[',concat_ws(',' ,collect_set(concat('"', tag_function, '"'))),']') as attr_value,  
         '1' as is_json, 
         '${day}' as update_time
     from 
         temp.temp_ups_food_tag_info_tag_function
+    group by 
+        food_id
     
     union all
     select 
         food_id, 
         'tag' as top_category, 
         'tag_scene' as attr_key, 
-        tag_scene as attr_value, 
+        concat('[',concat_ws(',' ,collect_set(concat('"', tag_scene, '"'))),']') as attr_value,  
         '1' as is_json, 
         '${day}' as update_time
     from 
         temp.temp_ups_food_tag_info_tag_scene
+    group by 
+        food_id
 ;
 
 insert overwrite table dm.dm_ups_food_item_info partition(dt='3000-12-31', flag='tag')

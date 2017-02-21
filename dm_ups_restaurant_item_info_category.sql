@@ -16,6 +16,8 @@ select t.restaurant_id, 'category' as top_category, split(item,'=')[0] as attr_k
 from(
     select restaurant_id,
         array(
+          concat('cat0_id=',concat('[',concat_ws(',',collect_set(concat('"',cat0_id,'"'))),']')),
+          concat('cat1_id=',concat('[',concat_ws(',',collect_set(concat('"',cat1_id,'"'))),']')),
           concat('cat0_name=',concat('[',concat_ws(',',collect_set(concat('"',cat0_name,'"'))),']')),
           concat('cat1_name=',concat('[',concat_ws(',',collect_set(concat('"',cat1_name,'"'))),']'))
           ) as info_array

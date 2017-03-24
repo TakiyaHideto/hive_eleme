@@ -82,26 +82,32 @@ CREATE EXTERNAL TABLE dm_test.dm_ups_restaurant_info_h2c_alpha
   order_date_prefer string,
   order_month_distribution string,
   food_top_10 string,
-
-  rest_cost_distribution string,
+  
   rest_food_cate_distribution string,
-  recent_30_rest_subsidy_median float,
-  rest_delivertime_avg int,
+  recent_30_alltime_exp_ctr float,
+  recent_30_alltime_exp_cnt int,
+  recent_30_meal_exp_ctr float,
+  recent_30_meal_exp_cnt int,
+  recent_30_aftertea_exp_ctr float,
+  recent_30_aftertea_exp_cnt int,
+  recent_30_nightsnack_exp_ctr float,
+  recent_30_nightsnack_exp_cnt int,
+  user_platform_order_cnt int,
+  rest_delivertime_avg float,
   food_price_avg float,
+
   security_level string,
   recent_30_is_rest_discount int,
   recent_30_top_3_food_sales_scale float,
-  top_5_comment_keyword string,
   recent_14_order_cnt int,
   recent_14_favor_cnt int,
   recent_14_favor_avg float,
+  recent_7_order_cnt int,
   recent_14_returned_customer_cnt int,
-  food_ord_cnt_weighted_avg_score string,
+  recent_30_rest_subsidy_median float,
   rating_score_avg float,
   is_premium int,
-  is_online_payment int,
   is_hummer int,
-  is_picture int,
   food_has_picture_scale float,
   food_has_picture_cnt int,
   is_certification int,
@@ -114,24 +120,9 @@ CREATE EXTERNAL TABLE dm_test.dm_ups_restaurant_info_h2c_alpha
   recent_30_rst_refuse_order_scale float,
   recent_30_user_refuse_order_scale float,
   recent_30_negtive_comment_cnt int,
-  recent_30_negtive_comment_scale float,
   comment_cnt int,
-  recent_30_order_remind_scale float,
-  recent_30_alltime_exp_cnt int,
-  recent_30_alltime_exp_ctr float,
-  recent_30_meal_exp_cnt int,
-  recent_30_meal_exp_ctr float,
-  recent_30_aftertea_exp_cnt int,
-  recent_30_aftertea_exp_ctr float,
-  recent_30_nightsnack_exp_cnt int,
-  recent_30_nightsnack_exp_ctr float,
-  user_platform_order_cnt float
-
+  recent_30_order_remind_scale float
 
   ) STORED BY 'org.apache.hadoop.hive.cassandra.cql.CqlStorageHandler'
 WITH SERDEPROPERTIES ("yangdi" = "22222222222","cassandra.host" = "192.168.115.180,192.168.115.169","cassandra.port"="9042","cassandra.ks.name" = "rec","cassandra.table.name"="dm_ups_restaurant_info","cassandra.username"="cassandra","cassandra.password"="cassandra") TBLPROPERTIES("cassandra.batchmutate.size"="5","zyy_test"="8888888","cassandra.consistency.level"="QUORUM");
-
-
-
-
 

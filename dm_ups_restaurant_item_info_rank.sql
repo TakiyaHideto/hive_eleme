@@ -240,28 +240,6 @@ FROM(
 ) t
 lateral view explode(t.info_array) tmp as item
 where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
-UNION ALL
-select
-    restaurant_id,
-    'rank' AS top_category,
-    SPLIT(item, '=')[0] AS attr_key,
-    SPLIT(item, '=')[1] AS attr_value,
-    0 AS is_json,
-    '${day}' AS update_time
-from(
-    select
-        restaurant_id,
-        array(
-            concat('rest_cost_distribution=',concat('"', res_range_of_cost, '"')),
-            concat('rest_food_cate_distribution=',concat('"', res_newflavor_rate, '"'))
-        ) as info_array
-    from 
-        st.st_bs_shop_portrait
-    where
-        dt='${day}'
-) t
-lateral view explode(t.info_array) tmp as item
-where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
 ;
 
 

@@ -224,8 +224,8 @@ insert overwrite table dm.dm_ups_food_item_info partition(dt='${day}', flag='tag
         food_id, 
         'tag' as top_category, 
         'tag_function' as attr_key, 
-        concat('[',concat_ws(',' ,collect_set(concat('"', tag_function, '"'))),']') as attr_value,  
-        '1' as is_json, 
+        max(tag_function) as attr_value,  
+        '0' as is_json, 
         '${day}' as update_time
     from 
         temp.temp_ups_food_tag_info_tag_function
@@ -237,8 +237,8 @@ insert overwrite table dm.dm_ups_food_item_info partition(dt='${day}', flag='tag
         food_id, 
         'tag' as top_category, 
         'tag_scene' as attr_key, 
-        concat('[',concat_ws(',' ,collect_set(concat('"', tag_scene, '"'))),']') as attr_value,  
-        '1' as is_json, 
+        max(tag_scene) as attr_value,  
+        '0' as is_json, 
         '${day}' as update_time
     from 
         temp.temp_ups_food_tag_info_tag_scene
@@ -260,13 +260,3 @@ insert overwrite table dm.dm_ups_food_item_info partition(dt='3000-12-31', flag=
         dt='${day}' and 
         flag='tag'
 ;
-
-
-
-
-
-
-
-
-
-

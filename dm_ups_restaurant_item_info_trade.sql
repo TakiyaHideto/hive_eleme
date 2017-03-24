@@ -127,7 +127,7 @@ create table temp.temp_mdl_restaurant_recent_30_trade as
         from 
             dw.dw_trd_order_wide_day
         where 
-            dt>=get_date('${day}',-31) and 
+            dt>=get_date('${day}',-30) and 
             order_status=1 and
             user_id<>886
         ) t1
@@ -147,30 +147,6 @@ drop table temp.temp_mdl_restaurant_long_term_trade;
 create table temp.temp_mdl_restaurant_long_term_trade as
     select 
         restaurant_id,
-        sum(case when month(created_at)=1 then 1 else 0 end) as jan_order_cnt,
-        sum(case when month(created_at)=2 then 1 else 0 end) as feb_order_cnt,
-        sum(case when month(created_at)=3 then 1 else 0 end) as mar_order_cnt,
-        sum(case when month(created_at)=4 then 1 else 0 end) as apr_order_cnt,
-        sum(case when month(created_at)=5 then 1 else 0 end) as may_order_cnt,
-        sum(case when month(created_at)=6 then 1 else 0 end) as jun_order_cnt,
-        sum(case when month(created_at)=7 then 1 else 0 end) as jul_order_cnt,
-        sum(case when month(created_at)=8 then 1 else 0 end) as aug_order_cnt,
-        sum(case when month(created_at)=9 then 1 else 0 end) as sep_order_cnt,
-        sum(case when month(created_at)=10 then 1 else 0 end) as oct_order_cnt,
-        sum(case when month(created_at)=11 then 1 else 0 end) as nov_order_cnt,
-        sum(case when month(created_at)=12 then 1 else 0 end) as dec_order_cnt,
-        sum(case when month(created_at)=1 then total else 0 end) as jan_sales_amt,
-        sum(case when month(created_at)=2 then total else 0 end) as feb_sales_amt,
-        sum(case when month(created_at)=3 then total else 0 end) as mar_sales_amt,
-        sum(case when month(created_at)=4 then total else 0 end) as apr_sales_amt,
-        sum(case when month(created_at)=5 then total else 0 end) as may_sales_amt,
-        sum(case when month(created_at)=6 then total else 0 end) as jun_sales_amt,
-        sum(case when month(created_at)=7 then total else 0 end) as jul_sales_amt,
-        sum(case when month(created_at)=8 then total else 0 end) as aug_sales_amt,
-        sum(case when month(created_at)=9 then total else 0 end) as sep_sales_amt,
-        sum(case when month(created_at)=10 then total else 0 end) as oct_sales_amt,
-        sum(case when month(created_at)=11 then total else 0 end) as nov_sales_amt,
-        sum(case when month(created_at)=12 then total else 0 end) as dec_sales_amt,
         sum(case when from_unixtime(unix_timestamp(dt,'yyyy-MM-dd'),'u')=7 then 1 else 0 end) as sun_order_cnt,
         sum(case when from_unixtime(unix_timestamp(dt,'yyyy-MM-dd'),'u')=1 then 1 else 0 end) as mon_order_cnt,
         sum(case when from_unixtime(unix_timestamp(dt,'yyyy-MM-dd'),'u')=2 then 1 else 0 end) as tues_order_cnt,
@@ -189,54 +165,6 @@ create table temp.temp_mdl_restaurant_long_term_trade as
         sum(case when from_unixtime(unix_timestamp(dt,'yyyy-MM-dd'),'u')>=6 and from_unixtime(unix_timestamp(dt,'yyyy-MM-dd'),'u')<=7 then 1 else 0 end) as weekend_order_cnt,
         sum(case when from_unixtime(unix_timestamp(dt,'yyyy-MM-dd'),'u')>=1 and from_unixtime(unix_timestamp(dt,'yyyy-MM-dd'),'u')<=5 then total else 0 end) as workday_sales_amt,
         sum(case when from_unixtime(unix_timestamp(dt,'yyyy-MM-dd'),'u')>=6 and from_unixtime(unix_timestamp(dt,'yyyy-MM-dd'),'u')<=7 then total else 0 end) as weekend_sales_amt,
-        sum(case when hour(created_at)=0 then 1 else 0 end) as hour_0_order_cnt,
-        sum(case when hour(created_at)=1 then 1 else 0 end) as hour_1_order_cnt,
-        sum(case when hour(created_at)=2 then 1 else 0 end) as hour_2_order_cnt,
-        sum(case when hour(created_at)=3 then 1 else 0 end) as hour_3_order_cnt,
-        sum(case when hour(created_at)=4 then 1 else 0 end) as hour_4_order_cnt,
-        sum(case when hour(created_at)=5 then 1 else 0 end) as hour_5_order_cnt,
-        sum(case when hour(created_at)=6 then 1 else 0 end) as hour_6_order_cnt,
-        sum(case when hour(created_at)=7 then 1 else 0 end) as hour_7_order_cnt,
-        sum(case when hour(created_at)=8 then 1 else 0 end) as hour_8_order_cnt,
-        sum(case when hour(created_at)=9 then 1 else 0 end) as hour_9_order_cnt,
-        sum(case when hour(created_at)=10 then 1 else 0 end) as hour_10_order_cnt,
-        sum(case when hour(created_at)=11 then 1 else 0 end) as hour_11_order_cnt,
-        sum(case when hour(created_at)=12 then 1 else 0 end) as hour_12_order_cnt,
-        sum(case when hour(created_at)=13 then 1 else 0 end) as hour_13_order_cnt,
-        sum(case when hour(created_at)=14 then 1 else 0 end) as hour_14_order_cnt,
-        sum(case when hour(created_at)=15 then 1 else 0 end) as hour_15_order_cnt,
-        sum(case when hour(created_at)=16 then 1 else 0 end) as hour_16_order_cnt,
-        sum(case when hour(created_at)=17 then 1 else 0 end) as hour_17_order_cnt,
-        sum(case when hour(created_at)=18 then 1 else 0 end) as hour_18_order_cnt,
-        sum(case when hour(created_at)=19 then 1 else 0 end) as hour_19_order_cnt,
-        sum(case when hour(created_at)=20 then 1 else 0 end) as hour_20_order_cnt,
-        sum(case when hour(created_at)=21 then 1 else 0 end) as hour_21_order_cnt,
-        sum(case when hour(created_at)=22 then 1 else 0 end) as hour_22_order_cnt,
-        sum(case when hour(created_at)=23 then 1 else 0 end) as hour_23_order_cnt,
-        sum(case when hour(created_at)=0 then total else 0 end) as hour_0_sales_amt,
-        sum(case when hour(created_at)=1 then total else 0 end) as hour_1_sales_amt,
-        sum(case when hour(created_at)=2 then total else 0 end) as hour_2_sales_amt,
-        sum(case when hour(created_at)=3 then total else 0 end) as hour_3_sales_amt,
-        sum(case when hour(created_at)=4 then total else 0 end) as hour_4_sales_amt,
-        sum(case when hour(created_at)=5 then total else 0 end) as hour_5_sales_amt,
-        sum(case when hour(created_at)=6 then total else 0 end) as hour_6_sales_amt,
-        sum(case when hour(created_at)=7 then total else 0 end) as hour_7_sales_amt,
-        sum(case when hour(created_at)=8 then total else 0 end) as hour_8_sales_amt,
-        sum(case when hour(created_at)=9 then total else 0 end) as hour_9_sales_amt,
-        sum(case when hour(created_at)=10 then total else 0 end) as hour_10_sales_amt,
-        sum(case when hour(created_at)=11 then total else 0 end) as hour_11_sales_amt,
-        sum(case when hour(created_at)=12 then total else 0 end) as hour_12_sales_amt,
-        sum(case when hour(created_at)=13 then total else 0 end) as hour_13_sales_amt,
-        sum(case when hour(created_at)=14 then total else 0 end) as hour_14_sales_amt,
-        sum(case when hour(created_at)=15 then total else 0 end) as hour_15_sales_amt,
-        sum(case when hour(created_at)=16 then total else 0 end) as hour_16_sales_amt,
-        sum(case when hour(created_at)=17 then total else 0 end) as hour_17_sales_amt,
-        sum(case when hour(created_at)=18 then total else 0 end) as hour_18_sales_amt,
-        sum(case when hour(created_at)=19 then total else 0 end) as hour_19_sales_amt,
-        sum(case when hour(created_at)=20 then total else 0 end) as hour_20_sales_amt,
-        sum(case when hour(created_at)=21 then total else 0 end) as hour_21_sales_amt,
-        sum(case when hour(created_at)=22 then total else 0 end) as hour_22_sales_amt,
-        sum(case when hour(created_at)=23 then total else 0 end) as hour_23_sales_amt,
         sum(case when substr(created_at,12,5)>='10:00' and substr(created_at,12,5)<'14:00' then 1 else 0 end) as lunch_order_cnt,
         sum(case when substr(created_at,12,5)>='14:00' and substr(created_at,12,5)<'16:30' then 1 else 0 end) as tea_order_cnt,
         sum(case when substr(created_at,12,5)>='16:30' and substr(created_at,12,5)<'20:00' then 1 else 0 end) as supper_order_cnt,
@@ -250,7 +178,7 @@ create table temp.temp_mdl_restaurant_long_term_trade as
     from 
         dw.dw_trd_order_wide_day
     where 
-        dt>=get_date('${day}',-180) and 
+        dt>=get_date('${day}',-60) and 
         order_status=1 and
         user_id<>886
     group by 
@@ -277,7 +205,7 @@ from (
             from 
                 dw.dw_trd_order_wide_day
             where 
-                dt>=get_date('${day}',-31) and 
+                dt>=get_date('${day}',-30) and 
                 order_status=1
         ) t1
         join (
@@ -358,46 +286,7 @@ select t.restaurant_id, 'trade' as top_category, split(item,'=')[0] as attr_key,
 from(
     select restaurant_id,
         array(
-            concat('order_month_distribution={',concat('\"jan_order_cnt\":',jan_order_cnt,',',
-                                                        '\"feb_order_cnt\":',feb_order_cnt,',',
-                                                        '\"mar_order_cnt\":',mar_order_cnt,',',
-                                                        '\"apr_order_cnt\":',apr_order_cnt,',',
-                                                        '\"may_order_cnt\":',may_order_cnt,',',
-                                                        '\"jun_order_cnt\":',jun_order_cnt,',',
-                                                        '\"jul_order_cnt\":',jul_order_cnt,',',
-                                                        '\"aug_order_cnt\":',aug_order_cnt,',',
-                                                        '\"sep_order_cnt\":',sep_order_cnt,',',
-                                                        '\"oct_order_cnt\":',oct_order_cnt,',',
-                                                        '\"nov_order_cnt\":',nov_order_cnt,',',
-                                                        '\"dec_order_cnt\":',dec_order_cnt,',',
-                                                        '\"jan_sales_amt\":',round(jan_sales_amt,2),',',
-                                                        '\"feb_sales_amt\":',round(feb_sales_amt,2),',',
-                                                        '\"mar_sales_amt\":',round(mar_sales_amt,2),',',
-                                                        '\"apr_sales_amt\":',round(apr_sales_amt,2),',',
-                                                        '\"may_sales_amt\":',round(may_sales_amt,2),',',
-                                                        '\"jun_sales_amt\":',round(jun_sales_amt,2),',',
-                                                        '\"jul_sales_amt\":',round(jul_sales_amt,2),',',
-                                                        '\"aug_sales_amt\":',round(aug_sales_amt,2),',',
-                                                        '\"sep_sales_amt\":',round(sep_sales_amt,2),',',
-                                                        '\"oct_sales_amt\":',round(oct_sales_amt,2),',',
-                                                        '\"nov_sales_amt\":',round(nov_sales_amt,2),',',
-                                                        '\"dec_sales_amt\":',round(dec_sales_amt,2)),'}'),
-
             concat('order_date_prefer={',concat(
-                                                -- '\"sun_order_cnt\":',sun_order_cnt,',',
-                                                -- '\"mon_order_cnt\":',mon_order_cnt,',',
-                                                -- '\"tues_order_cnt\":',tues_order_cnt,',',
-                                                -- '\"wed_order_cnt\":',wed_order_cnt,',',
-                                                -- '\"thur_order_cnt\":',thur_order_cnt,',',
-                                                -- '\"fri_order_cnt\":',fri_order_cnt,',',
-                                                -- '\"sat_order_cnt\":',sat_order_cnt,',',
-                                                -- '\"sun_sales_amt\":',round(sun_sales_amt,2),',',
-                                                -- '\"mon_sales_amt\":',round(mon_sales_amt,2),',',
-                                                -- '\"tues_sales_amt\":',round(tues_sales_amt,2),',',
-                                                -- '\"wed_sales_amt\":',round(wed_sales_amt,2),',',
-                                                -- '\"thur_sales_amt\":',round(thur_sales_amt,2),',',
-                                                -- '\"fri_sales_amt\":',round(fri_sales_amt,2),',',
-                                                -- '\"sat_sales_amt\":',round(sat_sales_amt,2),',',
                                                 '\"workday_order_cnt\":',workday_order_cnt,',',
                                                 '\"weekend_order_cnt\":',weekend_order_cnt,',',
                                                 '\"workday_sales_amt\":',round(workday_sales_amt,2),',',
@@ -408,54 +297,6 @@ from(
                                                 '\"weekend_sales_scale\":',round(weekend_sales_amt/(workday_sales_amt+weekend_sales_amt),3)),'}'),
 
             concat('order_time_prefer={',concat(
-                                                -- '\"hour_0_order_cnt\":',hour_0_order_cnt,',',
-                                                -- '\"hour_1_order_cnt\":',hour_1_order_cnt,',',
-                                                -- '\"hour_2_order_cnt\":',hour_2_order_cnt,',',
-                                                -- '\"hour_3_order_cnt\":',hour_3_order_cnt,',',
-                                                -- '\"hour_4_order_cnt\":',hour_4_order_cnt,',',
-                                                -- '\"hour_5_order_cnt\":',hour_5_order_cnt,',',
-                                                -- '\"hour_6_order_cnt\":',hour_6_order_cnt,',',
-                                                -- '\"hour_7_order_cnt\":',hour_7_order_cnt,',',
-                                                -- '\"hour_8_order_cnt\":',hour_8_order_cnt,',',
-                                                -- '\"hour_9_order_cnt\":',hour_9_order_cnt,',',
-                                                -- '\"hour_10_order_cnt\":',hour_10_order_cnt,',',
-                                                -- '\"hour_11_order_cnt\":',hour_11_order_cnt,',',
-                                                -- '\"hour_12_order_cnt\":',hour_12_order_cnt,',',
-                                                -- '\"hour_13_order_cnt\":',hour_13_order_cnt,',',
-                                                -- '\"hour_14_order_cnt\":',hour_14_order_cnt,',',
-                                                -- '\"hour_15_order_cnt\":',hour_15_order_cnt,',',
-                                                -- '\"hour_16_order_cnt\":',hour_16_order_cnt,',',
-                                                -- '\"hour_17_order_cnt\":',hour_17_order_cnt,',',
-                                                -- '\"hour_18_order_cnt\":',hour_18_order_cnt,',',
-                                                -- '\"hour_19_order_cnt\":',hour_19_order_cnt,',',
-                                                -- '\"hour_20_order_cnt\":',hour_20_order_cnt,',',
-                                                -- '\"hour_21_order_cnt\":',hour_21_order_cnt,',',
-                                                -- '\"hour_22_order_cnt\":',hour_22_order_cnt,',',
-                                                -- '\"hour_23_order_cnt\":',hour_23_order_cnt,',',
-                                                -- '\"hour_0_sales_amt\":',round(hour_0_sales_amt,2),',',
-                                                -- '\"hour_1_sales_amt\":',round(hour_1_sales_amt,2),',',
-                                                -- '\"hour_2_sales_amt\":',round(hour_2_sales_amt,2),',',
-                                                -- '\"hour_3_sales_amt\":',round(hour_3_sales_amt,2),',',
-                                                -- '\"hour_4_sales_amt\":',round(hour_4_sales_amt,2),',',
-                                                -- '\"hour_5_sales_amt\":',round(hour_5_sales_amt,2),',',
-                                                -- '\"hour_6_sales_amt\":',round(hour_6_sales_amt,2),',',
-                                                -- '\"hour_7_sales_amt\":',round(hour_7_sales_amt,2),',',
-                                                -- '\"hour_8_sales_amt\":',round(hour_8_sales_amt,2),',',
-                                                -- '\"hour_9_sales_amt\":',round(hour_9_sales_amt,2),',',
-                                                -- '\"hour_10_sales_amt\":',round(hour_10_sales_amt,2),',',
-                                                -- '\"hour_11_sales_amt\":',round(hour_11_sales_amt,2),',',
-                                                -- '\"hour_12_sales_amt\":',round(hour_12_sales_amt,2),',',
-                                                -- '\"hour_13_sales_amt\":',round(hour_13_sales_amt,2),',',
-                                                -- '\"hour_14_sales_amt\":',round(hour_14_sales_amt,2),',',
-                                                -- '\"hour_15_sales_amt\":',round(hour_15_sales_amt,2),',',
-                                                -- '\"hour_16_sales_amt\":',round(hour_16_sales_amt,2),',',
-                                                -- '\"hour_17_sales_amt\":',round(hour_17_sales_amt,2),',',
-                                                -- '\"hour_18_sales_amt\":',round(hour_18_sales_amt,2),',',
-                                                -- '\"hour_19_sales_amt\":',round(hour_19_sales_amt,2),',',
-                                                -- '\"hour_20_sales_amt\":',round(hour_20_sales_amt,2),',',
-                                                -- '\"hour_21_sales_amt\":',round(hour_21_sales_amt,2),',',
-                                                -- '\"hour_22_sales_amt\":',round(hour_22_sales_amt,2),',',
-                                                -- '\"hour_23_sales_amt\":',round(hour_23_sales_amt,2),',',
                                                 '\"lunch_order_cnt\":',lunch_order_cnt,',',
                                                 '\"tea_order_cnt\":',tea_order_cnt,',',
                                                 '\"supper_order_cnt\":',supper_order_cnt,',',
@@ -498,31 +339,6 @@ from(
         ) as info_array
     from 
         temp.temp_mdl_restaurant_long_term_trade_rank
-) t
-lateral view explode(t.info_array) tmp as item
-where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0
-
-union all
-select 
-    t.restaurant_id, 
-    'trade' as top_category, 
-    split(item,'=')[0] as attr_key, 
-    split(item,'=')[1] as attr_value, 
-    0 as is_json, 
-    '${day}' as update_time
-from(
-    select 
-        restaurant_id,
-        array(
-            concat('recent_30_rest_subsidy_median=',round(res_avg_discount_count,3)),
-            concat('recent_30_top_3_food_sales_scale=',round(top_order_pct,3)),
-            concat('recent_14_order_cnt=',order_day_count_14day),
-            concat('user_platform_order_cnt=',round(res_user_avgorders,3))
-        ) as info_array
-    from 
-        st.st_bs_shop_portrait
-    where
-        dt='${day}'
 ) t
 lateral view explode(t.info_array) tmp as item
 where split(item,'=')[1]!='0' AND length(split(item,'=')[1])>0

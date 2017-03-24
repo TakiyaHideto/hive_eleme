@@ -1,6 +1,6 @@
 #***************************************************************************************************
 # **  文件名称： dm_ups_restaurant_info_h2c_alpha.sql
-# **  功能描述： 餐厅画像导入Cassandra beta环境
+# **  功能描述： 餐厅画像导入Cassandra alpha
 #
 # **  创建者：jiahao.dong@ele.me
 # **  创建日期： 2016-12-01
@@ -8,8 +8,6 @@
 # **  ChangeLog
 #***************************************************************************************************
 
-
-set mapred.max.split.size=128000000;
 insert into table dm_test.dm_ups_restaurant_info_h2c_alpha
 select
 restaurant_id,
@@ -81,7 +79,47 @@ parse_json_object(profile_json,'trade.recent_7_order_hongbao_preferential_stddev
 parse_json_object(profile_json,'trade.order_time_prefer',false) as order_time_prefer,
 parse_json_object(profile_json,'trade.order_date_prefer',false) as order_date_prefer,
 parse_json_object(profile_json,'trade.order_month_distribution',false) as order_month_distribution,
-parse_json_object(profile_json,'trade.food_top_10',false) as food_top_10
+parse_json_object(profile_json,'trade.food_top_10',false) as food_top_10,
 
-from dm.dm_ups_restaurant_info where dt='3000-12-31';
+parse_json_object(profile_json,'rank.rest_food_cate_distribution',false) as rest_food_cate_distribution,
+parse_json_object(profile_json,'log.recent_30_alltime_exp_ctr',false) as recent_30_alltime_exp_ctr,
+parse_json_object(profile_json,'log.recent_30_alltime_exp_cnt',false) as recent_30_alltime_exp_cnt,
+parse_json_object(profile_json,'log.recent_30_meal_exp_ctr',false) as recent_30_meal_exp_ctr,
+parse_json_object(profile_json,'log.recent_30_meal_exp_cnt',false) as recent_30_meal_exp_cnt,
+parse_json_object(profile_json,'log.recent_30_aftertea_exp_ctr',false) as recent_30_aftertea_exp_ctr,
+parse_json_object(profile_json,'log.recent_30_aftertea_exp_cnt',false) as recent_30_aftertea_exp_cnt,
+parse_json_object(profile_json,'log.recent_30_nightsnack_exp_ctr',false) as recent_30_nightsnack_exp_ctr,
+parse_json_object(profile_json,'log.recent_30_nightsnack_exp_cnt',false) as recent_30_nightsnack_exp_cnt,
+parse_json_object(profile_json,'trade.user_platform_order_cnt',false) as rest_delivertime_avg,
+parse_json_object(profile_json,'rank.rest_delivertime_avg',false) as rest_delivertime_avg,
+parse_json_object(profile_json,'base.food_price_avg',false) as food_price_avg,
 
+parse_json_object(profile_json,'base.security_level',false) as security_level,
+parse_json_object(profile_json,'rank.recent_30_is_rest_discount',false) as recent_30_is_rest_discount,
+parse_json_object(profile_json,'trade.recent_30_top_3_food_sales_scale',false) as recent_30_top_3_food_sales_scale,
+parse_json_object(profile_json,'trade.recent_14_order_cnt',false) as recent_14_order_cnt,
+parse_json_object(profile_json,'rank.recent_14_favor_cnt',false) as recent_14_favor_cnt,
+parse_json_object(profile_json,'rank.recent_14_favor_avg',false) as recent_14_favor_avg,
+parse_json_object(profile_json,'trade.recent_14_returned_customer_cnt',false) as recent_14_returned_customer_cnt,
+parse_json_object(profile_json,'trade.recent_30_rest_subsidy_median',false) as recent_30_rest_subsidy_median,
+parse_json_object(profile_json,'comment.rating_score_avg',false) as rating_score_avg,
+parse_json_object(profile_json,'base.is_premium',false) as is_premium,
+parse_json_object(profile_json,'base.is_hummer',false) as is_hummer,
+parse_json_object(profile_json,'base.food_has_picture_scale',false) as food_has_picture_scale,
+parse_json_object(profile_json,'base.food_has_picture_cnt',false) as food_has_picture_cnt,
+parse_json_object(profile_json,'base.is_certification',false) as is_certification,
+parse_json_object(profile_json,'base.is_new',false) as is_new,
+parse_json_object(profile_json,'base.is_royalty',false) as is_royalty,
+parse_json_object(profile_json,'base.is_gka',false) as is_gka,
+parse_json_object(profile_json,'base.is_controlled_by_eleme',false) as is_controlled_by_eleme,
+parse_json_object(profile_json,'base.is_rescued',false) as is_rescued,
+parse_json_object(profile_json,'rank.recent_30_order_complain_scale',false) as recent_30_order_complain_scale,
+parse_json_object(profile_json,'rank.recent_30_rst_refuse_order_scale',false) as recent_30_rst_refuse_order_scale,
+parse_json_object(profile_json,'rank.recent_30_user_refuse_order_scale',false) as recent_30_user_refuse_order_scale,
+parse_json_object(profile_json,'comment.recent_30_negtive_comment_cnt',false) as recent_30_negtive_comment_cnt,
+parse_json_object(profile_json,'comment.comment_cnt',false) as comment_cnt,
+parse_json_object(profile_json,'rank.recent_30_order_remind_scale',false) as recent_30_order_remind_scale
+
+from dm.dm_ups_restaurant_info 
+where dt='3000-12-31' and restaurant_id<=100000
+;

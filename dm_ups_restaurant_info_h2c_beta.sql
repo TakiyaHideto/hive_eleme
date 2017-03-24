@@ -81,7 +81,20 @@ parse_json_object(profile_json,'trade.recent_7_order_hongbao_preferential_stddev
 parse_json_object(profile_json,'trade.order_time_prefer',false) as order_time_prefer,
 parse_json_object(profile_json,'trade.order_date_prefer',false) as order_date_prefer,
 parse_json_object(profile_json,'trade.order_month_distribution',false) as order_month_distribution,
-parse_json_object(profile_json,'trade.food_top_10',false) as food_top_10
+parse_json_object(profile_json,'trade.food_top_10',false) as food_top_10,
+
+parse_json_object(profile_json,'rank.rest_food_cate_distribution',false) as rest_food_cate_distribution,
+parse_json_object(profile_json,'log.recent_30_alltime_exp_ctr',false) as recent_30_alltime_exp_ctr,
+parse_json_object(profile_json,'log.recent_30_alltime_exp_cnt',false) as recent_30_alltime_exp_cnt,
+parse_json_object(profile_json,'log.recent_30_meal_exp_ctr',false) as recent_30_meal_exp_ctr,
+parse_json_object(profile_json,'log.recent_30_meal_exp_cnt',false) as recent_30_meal_exp_cnt,
+parse_json_object(profile_json,'log.recent_30_aftertea_exp_ctr',false) as recent_30_aftertea_exp_ctr,
+parse_json_object(profile_json,'log.recent_30_aftertea_exp_cnt',false) as recent_30_aftertea_exp_cnt,
+parse_json_object(profile_json,'log.recent_30_nightsnack_exp_ctr',false) as recent_30_nightsnack_exp_ctr,
+parse_json_object(profile_json,'log.recent_30_nightsnack_exp_cnt',false) as recent_30_nightsnack_exp_cnt,
+parse_json_object(profile_json,'trade.user_platform_order_cnt',false) as rest_delivertime_avg,
+parse_json_object(profile_json,'rank.rest_delivertime_avg',false) as rest_delivertime_avg,
+parse_json_object(profile_json,'base.food_price_avg',false) as food_price_avg
 
 from dm.dm_ups_restaurant_info where dt='3000-12-31';
 

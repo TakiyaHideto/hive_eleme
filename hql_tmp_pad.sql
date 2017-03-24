@@ -97,7 +97,7 @@ select
     ;
 
 select 
-    count(*) - sum(case when length(parse_json_object(profile_json, '$.base.create_time')) > 8 then 1 else 0 end) as error_cnt
+    sum(case when length(parse_json_object(profile_json, '$.base.create_time')) > 8 then 0 else 1 end) as error_cnt
 from 
     dm.dm_ups_user_info
 where 
@@ -297,15 +297,15 @@ on(
 
 
 select
-    food_id,
+    taker_id,
     attr_key,
     count(*) as num
 from
-    dm.dm_ups_food_item_info
+    dm.dm_ups_taker_item_info
 where 
     dt='3000-12-31'
 group by 
-    food_id,
+    taker_id,
     attr_key
 having 
     num>1
@@ -342,11 +342,108 @@ LIMIT 1;
 
 
 
+select *
+from dm.dm_ups_restaurant_info
+where dt='3000-12-31' and parse_json_object(profile_json,'base.create_time',false) is null
+limit 100;
 
 
+select sum(case when parse_json_object(profile_json,'base.create_time',false) is null then 1 else 0 end)
+from dm.dm_ups_restaurant_info
+where dt='3000-12-31'
+;
 
 
+select * from dm.dm_ups_user_info where parse_json_object(profile_json,'base.phone_number',false)=18721780518 and dt='3000-12-31';
 
+
+select sum(if (merchant_customer_walk_distance>0 or merchant_customer_walk_distance is not null, 1, 0)), count(*) from dm.dm_tms_apollo_waybill_wide_detail where dt='2017-03-15';
+
+select merchant_customer_walk_distance from dm.dm_tms_apollo_waybill_wide_detail where dt='2017-03-15';
+
+CREATE TABLE rec.dm_ups_taker_info (
+    taker_id bigint PRIMARY KEY,
+    city_id int,
+    created_at text,
+    delivery_mode text,
+    geo_name text,
+    max_rst_count_per_deliver int,
+    team_id bigint,
+    team_name text,
+    org_id int,
+    team_created_at text,
+    team_load int,
+    team_status int,
+
+    period_deliver_distance_avg text,
+    period_fetch_distance_avg text,
+    period_deliver_time_avg text,
+    period_deliver_speed_avg text,
+    recent_14_deliver_speed_trend text,
+    fetch_speed_weighted_avg float,
+    team_deliver_speed_rank int,
+
+    rest_level_distribution text,
+    recent_30_order_cnt int,
+    recent_30_date_cnt int,
+    day_peak_order_cnt_avg float,
+    day_peak_order_cnt_std float,
+    night_peak_order_cnt_avg float,
+    night_peak_order_cnt_std float,
+    ontime_order_rate float,
+    day_peak_ontime_rate float,
+    night_peak_ontime_rate float,
+    recent_14_day_peak_order_cnt_trend text,
+    recent_14_night_peak_order_cnt_trend text,
+    recent_14_ontime_trend text
+    
+) WITH bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 172800
+    AND gc_grace_seconds = 1800
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+    
+
+insert overwrite local directory '/home/dev/jiahao.dong'
+    select
+        concat(
+        concat('restaurant_id','\003',if(restaurant_id is not null, restaurant_id ,'null')),'\001',
+        concat('restaurant_id','\003',if(restaurant_id is not null, restaurant_id ,'null')),'\002',
+        concat('latitude','\003',if(latitude is not null, latitude ,'null')),'\002',
+        concat('longitude','\003',if(longitude is not null, longitude ,'null')),'\002',
+        concat('geohash','\003',if(geohash is not null, geohash ,'null')),'\002',
+        concat('city_id','\003',if(city_id is not null, city_id ,'null')),'\002',
+        concat('cat0_name','\003',if(cat0_name is not null, cat0_name ,'null')),'\002',
+        concat('recent_7_order_amt','\003',if(recent_7_order_amt is not null, recent_7_order_amt ,'null')),'\002',
+        concat('food_price_avg','\003', if(food_price_avg is not null, food_price_avg, 'null'))
+        )
+    from(
+        select
+            case when restaurant_id is not null then concat('2:', restaurant_id) else null end as restaurant_id,
+            parse_json_object(profile_json,'base.latitude',false) as latitude,
+            parse_json_object(profile_json,'base.longitude',false) as longitude,
+            parse_json_object(profile_json,'base.geohash',false) as geohash,
+            parse_json_object(profile_json,'base.city_id',false) as city_id,
+            parse_json_object(profile_json,'category.cat0_name',false) as cat0_name,
+            parse_json_object(profile_json,'trade.recent_7_order_amt',false) as recent_7_order_amt,
+            parse_json_object(profile_json,'base.food_price_avg',false) as food_price_avg
+        from
+            dm.dm_ups_restaurant_info
+        where 
+            dt='3000-12-31' and
+            restaurant_id is not null
+    ) t
+    where recent_7_order_amt is not null
+    limit 1000
+;
 
 
 

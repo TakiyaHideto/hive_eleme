@@ -37,7 +37,9 @@ create table temp.temp_ups_food_basic_info as
             dt='${day}' and 
             is_valid=1
     ) t
-    lateral view explode(t.info_array) tmp as item;
+    lateral view explode(t.info_array) tmp as item
+    where  split(item,'=')[0] is not null
+    ;
 
 
 insert overwrite table dm.dm_ups_food_item_info partition(dt='${day}', flag='base')

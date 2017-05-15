@@ -94,7 +94,34 @@ parse_json_object(profile_json,'log.recent_30_nightsnack_exp_ctr',false) as rece
 parse_json_object(profile_json,'log.recent_30_nightsnack_exp_cnt',false) as recent_30_nightsnack_exp_cnt,
 parse_json_object(profile_json,'trade.user_platform_order_cnt',false) as rest_delivertime_avg,
 parse_json_object(profile_json,'rank.rest_delivertime_avg',false) as rest_delivertime_avg,
-parse_json_object(profile_json,'base.food_price_avg',false) as food_price_avg
+parse_json_object(profile_json,'base.food_price_avg',false) as food_price_avg,
+
+parse_json_object(profile_json,'base.security_level',false) as security_level,
+parse_json_object(profile_json,'rank.recent_30_is_rest_discount',false) as recent_30_is_rest_discount,
+parse_json_object(profile_json,'trade.recent_30_top_3_food_sales_scale',false) as recent_30_top_3_food_sales_scale,
+parse_json_object(profile_json,'trade.recent_14_order_cnt',false) as recent_14_order_cnt,
+parse_json_object(profile_json,'rank.recent_14_favor_cnt',false) as recent_14_favor_cnt,
+parse_json_object(profile_json,'rank.recent_14_favor_avg',false) as recent_14_favor_avg,
+parse_json_object(profile_json,'trade.recent_14_returned_customer_cnt',false) as recent_14_returned_customer_cnt,
+parse_json_object(profile_json,'trade.recent_30_rest_subsidy_median',false) as recent_30_rest_subsidy_median,
+parse_json_object(profile_json,'comment.rating_score_avg',false) as rating_score_avg,
+parse_json_object(profile_json,'base.is_premium',false) as is_premium,
+parse_json_object(profile_json,'base.is_hummer',false) as is_hummer,
+parse_json_object(profile_json,'base.food_has_picture_scale',false) as food_has_picture_scale,
+parse_json_object(profile_json,'base.food_has_picture_cnt',false) as food_has_picture_cnt,
+parse_json_object(profile_json,'base.is_certification',false) as is_certification,
+parse_json_object(profile_json,'base.is_new',false) as is_new,
+parse_json_object(profile_json,'base.is_royalty',false) as is_royalty,
+parse_json_object(profile_json,'base.is_gka',false) as is_gka,
+parse_json_object(profile_json,'base.is_controlled_by_eleme',false) as is_controlled_by_eleme,
+parse_json_object(profile_json,'base.is_rescued',false) as is_rescued,
+parse_json_object(profile_json,'rank.recent_30_order_complain_scale',false) as recent_30_order_complain_scale,
+parse_json_object(profile_json,'rank.recent_30_rst_refuse_order_scale',false) as recent_30_rst_refuse_order_scale,
+parse_json_object(profile_json,'rank.recent_30_user_refuse_order_scale',false) as recent_30_user_refuse_order_scale,
+parse_json_object(profile_json,'comment.recent_30_negtive_comment_cnt',false) as recent_30_negtive_comment_cnt,
+parse_json_object(profile_json,'comment.comment_cnt',false) as comment_cnt,
+parse_json_object(profile_json,'rank.recent_30_order_remind_scale',false) as recent_30_order_remind_scale,
+parse_json_object(profile_json,'rec.promise_cooking_time',false) as promise_cooking_time
 
 from dm.dm_ups_restaurant_info where dt='3000-12-31';
 

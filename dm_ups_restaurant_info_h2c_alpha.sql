@@ -118,7 +118,8 @@ parse_json_object(profile_json,'rank.recent_30_rst_refuse_order_scale',false) as
 parse_json_object(profile_json,'rank.recent_30_user_refuse_order_scale',false) as recent_30_user_refuse_order_scale,
 parse_json_object(profile_json,'comment.recent_30_negtive_comment_cnt',false) as recent_30_negtive_comment_cnt,
 parse_json_object(profile_json,'comment.comment_cnt',false) as comment_cnt,
-parse_json_object(profile_json,'rank.recent_30_order_remind_scale',false) as recent_30_order_remind_scale
+parse_json_object(profile_json,'rank.recent_30_order_remind_scale',false) as recent_30_order_remind_scale,
+parse_json_object(profile_json,'rec.promise_cooking_time',false) as promise_cooking_time
 
 from dm.dm_ups_restaurant_info 
 where dt='3000-12-31' and restaurant_id<=100000

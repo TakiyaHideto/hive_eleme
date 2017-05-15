@@ -103,7 +103,8 @@ select
         concat('recent_30_nightsnack_exp_cnt','\003', if(recent_30_nightsnack_exp_cnt is not null, recent_30_nightsnack_exp_cnt, 'null')),'\002',
         concat('rest_delivertime_avg','\003', if(rest_delivertime_avg is not null, rest_delivertime_avg, 'null')),'\002',
         concat('user_platform_order_cnt','\003', if(user_platform_order_cnt is not null, user_platform_order_cnt, 'null')),'\002',
-        concat('food_price_avg','\003', if(food_price_avg is not null, food_price_avg, 'null'))
+        concat('food_price_avg','\003', if(food_price_avg is not null, food_price_avg, 'null')),'\002',
+        concat('promise_cooking_time','\003', if(promise_cooking_time is not null, promise_cooking_time, 'null'))
         )
 from(
     select
@@ -183,7 +184,8 @@ from(
         parse_json_object(profile_json,'log.recent_30_nightsnack_exp_cnt',false) as recent_30_nightsnack_exp_cnt,
         parse_json_object(profile_json,'trade.user_platform_order_cnt',false) as user_platform_order_cnt,
         parse_json_object(profile_json,'rank.rest_delivertime_avg',false) as rest_delivertime_avg,
-        parse_json_object(profile_json,'base.food_price_avg',false) as food_price_avg
+        parse_json_object(profile_json,'base.food_price_avg',false) as food_price_avg,
+        parse_json_object(profile_json,'rank.promise_cooking_time',false) as promise_cooking_time
     from
         dm.dm_ups_restaurant_info
     where 
